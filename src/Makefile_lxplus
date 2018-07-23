@@ -1,0 +1,17 @@
+PREFIX=/afs/cern.ch/sw/lcg/app/releases/ROOT/6.06.00/x86_64-slc6-gcc49-opt/root/bin/
+ROOTCFLAGS=$(shell $(PREFIX)/root-config --cflags)
+ROOTLIBS=$(shell $(PREFIX)/root-config --libs)
+
+DELPHES=$(HOME)/programs/Delphes-3.3.2
+INCLUDE=$(HOME)/programs/include
+
+C++ = g++
+C_FLAGS = -g 
+
+all: delphes_event_selection                                      
+
+clean:                                              
+	rm delphes_event_selection
+
+delphes_event_selection: main.cc main.hh finalstateCuts.hh delphesReader.C delphesReader.h
+	$(C++) -L$(HOME)/programs/lib -L$(HOME)/programs/lib64 $(ROOTCFLAGS) -I$(INCLUDE) -I$(DELPHES) -I$(DELPHES)/external $(C_FLAGS) main.cc -o delphes_event_selection $(ROOTLIBS) -lGenVector -O2 -lboost_regex -lboost_filesystem -lboost_system 
