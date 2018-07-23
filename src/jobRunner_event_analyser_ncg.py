@@ -16,7 +16,7 @@ def makeJOFile(inputFile, uid, opts):
     cmd += "-i " + inputFile
     cmd += " -o " + outputFile
     cmd += " -d " + str(opts.debug[-1])
-    joName = name + "analysis_" + str(uid) + ".job"
+    joName = "analysis_" + str(uid) + ".job"
     joFile = open(joName, "w")
     joFile.write("echo Beginning\ job\n")
     joFile.write("source " + userDir + ".bashrc\n")
