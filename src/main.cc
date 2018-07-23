@@ -41,7 +41,7 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 			for (int j : *bJets) {
 				if (i == j) continue;
 				jet1 = (Jet*)jets->At(j);
-				jet_combined = jet1->P4 + jet0->P4;
+				jet_combined = jet1->P4() + jet0->P4();
 				delta = std::abs(125-jet_combined.M());
 				if (deltaMin > delta || deltaMin < 0) {
 					deltaMin = delta;
@@ -52,8 +52,8 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 		}
 		*bJet_0 = iMin;
 		*bJet_1 = jMin;
-		jet0 = (Jet*)jets->At(bJet_0);
-		jet1 = (Jet*)jets->At(bJet_1);
+		jet0 = (Jet*)jets->At(*bJet_0);
+		jet1 = (Jet*)jets->At(*bJet_1);
 		if (jet0->PT < jet1->PT) {
 			*bJet_1 = iMin;
 			*bJet_0 = jMin;
@@ -1084,15 +1084,15 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					if (bJets.size() >= 2) {//Quality b jets pairs found
 						h_mu_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
 						if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
-							v_tau_1 = tmpMuon->P4;
+							v_tau_1 = tmpMuon->P4();
 							tmpJet = (Jet*)branchJet->At(taus[0])
-							v_tau_0 = tmpJet->P4;
+							v_tau_0 = tmpJet->P4();
 							tmpMPT = (MissingET)branchMissingET->At(0);
 							v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
 							tmpJet = (Jet*)branchJet->At(bJet_0)
-							v_bJet_0 = tmpJet->P4;
+							v_bJet_0 = tmpJet->P4();
 							tmpJet = (Jet*)branchJet->At(bJet_1)
-							v_bJet_1 = tmpJet->P4;
+							v_bJet_1 = tmpJet->P4();
 							v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
 							v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 							if (debug) std::cout << "Accepted mu_tau_b_b event\n";
@@ -1112,8 +1112,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							b_1_eta = v_bJet_1.Eta();
 							b_1_phi = v_bJet_1.Phi();
 							b_1_mass = v_bJet_1.M();
-							mPT_pT = branchMissingET->At(0)->MET;
-							mPT_phi = branchMissingET->At(0)->Phi;
+							mPT_pT = tmpMPT->MET;
+							mPT_phi = tmpMPT->Phi;
 							h_tt_pT = v_higgs_tt.Pt();
 							h_tt_eta = v_higgs_tt.Eta();
 							h_tt_phi = v_higgs_tt.Phi();
@@ -1139,7 +1139,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
-							weight = (double)*reader->Event_Weight;
+							weight = treeReader->Weight;
 							mu_tau_b_b->Fill();
 							h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
