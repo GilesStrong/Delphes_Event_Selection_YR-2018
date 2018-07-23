@@ -12,7 +12,7 @@ bool debug = false;
 TLorentzVector getHiggs2Taus(TClonesArray* mpt, TLorentzVector t_0, TLorentzVector t_1) {
 	/*Returns 4-vector of Higgs->tau tau*/
 	TLorentzVector higgs, mPT;
-	mPT.SetPtEtaPhiM(mpt->At(0)->MET, 0.0, mpt->At(0)->Phi, 0.0); //TODO Check this
+	mPT.SetPtEtaPhiM((MissingET*)(mpt->At(0))->MET, 0.0, (MissingET*)(mpt->At(0))->Phi, 0.0); //TODO Check this
 	higgs = t_0 + t_1 + mPT;
 	return higgs;
 }
@@ -23,7 +23,7 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 	if (bJets->size() == 2) { //Only two b jets found
 		*bJet_0 = (*bJets)[0];
 		*bJet_1 = (*bJets)[1];
-		if (jets->at(bJet_0)->PT() < jets->at(bJet_1)->PT()) {
+		if ((Jet*)(jets->at(bJet_0))->PT() < (Jet*)(jets->at(bJet_1))->PT()) {
 			*bJet_1 = (*bJets)[0];
 			*bJet_0 = (*bJets)[1];
 		}
