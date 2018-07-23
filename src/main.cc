@@ -798,6 +798,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					}
 				}
 			}
+		}
 		//___________________________________
 		if (eventAccepted) continue;
 		//Check for e tau b b finalstates___
@@ -916,6 +917,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					}
 				}
 			}
+		}
 		//___________________________________
 		if (eventAccepted) continue;
 		//Check for tau tau b b finalstates___
@@ -1033,12 +1035,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					}
 				}
 			}
-		//___________________________________
-		if (eventAccepted) continue;
 		}
-		std::cout << "Event loop complete\n";
+		//___________________________________
 	}
-	std::cout << "All files complete\n";
+	std::cout << "Event loop complete\n";
 	//___________________________________________
 	//Writing plots______________________________
 	TFile* outputFile = new TFile(("../outputs/" + outputName + "/" + outputName + ".root").c_str(), "recreate");
@@ -1089,9 +1089,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	delete e_tau_b_b;
 	delete mu_tau_b_b;
 	delete tau_tau_b_b;
-	delete mu_mu_b_b;
-	delete e_mu_b_b;
-	delete e_e_b_b;
 	delete h_datasetSizes;
 	delete h_e_tau_b_b_cutFlow;
 	delete h_mu_tau_b_b_cutFlow;
