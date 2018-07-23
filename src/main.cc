@@ -848,9 +848,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					}
 				}
 				if (taus.size() >= 1) {//Quality tau
-					h_mu_tau_b_b_cutFlow->Fill("Quality #tau", 1);
+					h_e_tau_b_b_cutFlow->Fill("Quality #tau", 1);
 					if (bJets.size() >= 2) {//Quality b jets pairs found
-						h_mu_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
+						h_e_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
 						if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
 							v_tau_1 = tmpElectron->P4();
 							tmpJet = (Jet*)branchJet->At(taus[0]);
@@ -863,7 +863,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							v_bJet_1 = tmpJet->P4();
 							v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
 							v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
-							if (debug) std::cout << "Accepted mu_tau_b_b event\n";
+							if (debug) std::cout << "Accepted e_tau_b_b event\n";
 							mPT_pT = tmpMPT->MET;
 							mPT_phi = tmpMPT->Phi;
 							t_0_pT = v_tau_0.Pt();
@@ -910,7 +910,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
 							weight = *(double*)branchWeights->At(0);
-							mu_tau_b_b->Fill();
+							e_tau_b_b->Fill();
 							h_datasetSizes->Fill("e #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
 						}
@@ -1027,7 +1027,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 										&aplanarityP, &aplanorityP,
 										&upsilonP, &dShapeP);
 								weight = *(double*)branchWeights->At(0);
-								mu_tau_b_b->Fill();
+								tau_tau_b_b->Fill();
 								h_datasetSizes->Fill("#tau_{h} #tau_{h} b #bar{b}", 1);
 								eventAccepted = true;
 							}
