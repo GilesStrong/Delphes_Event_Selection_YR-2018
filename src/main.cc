@@ -9,10 +9,10 @@
 
 bool debug = false;
 
-TLorentzVector getHiggs2Taus(TClonesArray* mpt, TLorentzVector t_0, TLorentzVector t_1) {
+TLorentzVector getHiggs2Taus(MissingET* mpt, TLorentzVector t_0, TLorentzVector t_1) {
 	/*Returns 4-vector of Higgs->tau tau*/
 	TLorentzVector higgs, mPT;
-	mPT.SetPtEtaPhiM((MissingET*)(mpt->At(0))->MET, 0.0, (MissingET*)(mpt->At(0))->Phi, 0.0); //TODO Check this
+	mPT.SetPtEtaPhiM(mpt->MET, 0.0, mpt->Phi, 0.0); //TODO Check this
 	higgs = t_0 + t_1 + mPT;
 	return higgs;
 }
@@ -20,10 +20,13 @@ TLorentzVector getHiggs2Taus(TClonesArray* mpt, TLorentzVector t_0, TLorentzVect
 bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* bJet_1) {
 	/*Checks is a pair of b-jets exists, returning true if so and pointing bJet_0 and bJet_1 to
 	selected jets. Selects pair of jets invariant mass closest to 125 GeV*/
+	Jet *jet0, jet1;
 	if (bJets->size() == 2) { //Only two b jets found
 		*bJet_0 = (*bJets)[0];
 		*bJet_1 = (*bJets)[1];
-		if ((Jet*)(jets->at(bJet_0))->PT() < (Jet*)(jets->at(bJet_1))->PT()) {
+		jet0 = jets->At(0);
+		jet1 = jets->At(1);
+		if (jet0->PT < jet1->PT) {
 			*bJet_1 = (*bJets)[0];
 			*bJet_0 = (*bJets)[1];
 		}
@@ -31,14 +34,14 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 	} else if (bJets->size() > 2) { //More than two b jets: select pair with invariant mass closest to 125 GeV
 		double deltaMin = -1;
 		double delta;
-		TLorentzVector jet_i, jet_j, jet_combined;
+		TLorentzVector jet_combined;
 		int iMin, jMin;
 		for (int i : *bJets) {
-			jet_i = jets->at(bJet_1)->P4;
+			jet0 = jets->At(i);
 			for (int j : *bJets) {
 				if (i == j) continue;
-				jet_j = jets->at(bJet_1)->P4;
-				jet_combined = jet_i + jet_j;
+				jet1 = jets->At(j);jet_i = jet0->P4;
+				jet_combined = jet1->P4 + jet0->P4;
 				delta = std::abs(125-jet_combined.M());
 				if (deltaMin > delta || deltaMin < 0) {
 					deltaMin = delta;
@@ -49,7 +52,9 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 		}
 		*bJet_0 = iMin;
 		*bJet_1 = jMin;
-		if (jets->at(bJet_0)->PT() < jets->at(bJet_1)->PT()) {
+		jet0 = jets->At(bJet_0);
+		jet1 = jets->At(bJet_1);
+		if (jet0->PT < jet1->PT) {
 			*bJet_1 = iMin;
 			*bJet_0 = jMin;
 		}
@@ -1017,10 +1022,11 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	Jet* tmpJet;
 	Electron* tmpElectron;
 	Muon* tmpMuon;
+	MissingET* tmpMPT;
 	std::cout << "Beginning event loop\n";
 	for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
 		if (debug) std::cout << "Loading event " << cEvent << "\n";
-		treeReader->ReadEntry(entry); //Load next event
+		treeReader->ReadEntry(cEvent); //Load next event
 		if (debug) std::cout << "Event loaded, getting data\n";
 		if (debug) std::cout << "Data loaded\n";
 		if (cEvent % 1000 == 0) std::cout << "Loop: " << cEvent << "/" << nEvents << ", " <<
@@ -1050,11 +1056,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 		}
 		if (muons.size() == 1 && !addMuon) { //One quality muon found and no additional muons
 			h_mu_tau_b_b_cutFlow->Fill("Quality #mu", 1);
+			tmpMuon = (Muon*) branchMuon->At(muons[0]);
 			for (int i = 0; i < branchElectron->GetEntries(); i++) { //Loop through electrons
 				tmpElectron = (Electron*) branchElectron->At(i);
 				if (tmpElectron->PT > ePTMinAdd && std::abs(tmpElectron->Eta) < eEtaMaxAdd
 						&& tmpElectron->IsolationVar < eIsoMaxAdd) { //Additional electron
-					addElectron = true
+					addElectron = true;
 					break;
 				}
 			}
@@ -1064,7 +1071,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					tmpJet = (Jet*) branchJet->At(i);
 					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax
-							&& tmpJet->Charge != branchMuon->At(muons[0])->Charge) { //Quality  OS tau
+							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
 					if (tmpJet->TauTag == 0 && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
@@ -1079,7 +1086,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 						if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
 							v_tau_1 = branchMuon->At(muons[0])->P4;
 							v_tau_0 = branchJet->At(taus[0])->P4;
-							v_higgs_tt = getHiggs2Taus(branchMissingET, v_tau_0, v_tau_1);
+							tmpMPT = branchMissingET->At(0);
+							v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
 							v_bJet_0 = getBJet(reader, bJet_0);
 							v_bJet_1 = getBJet(reader, bJet_1);
 							v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
