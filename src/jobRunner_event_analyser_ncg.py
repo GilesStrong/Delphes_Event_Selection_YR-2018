@@ -25,7 +25,7 @@ def makeJOFile(inputFile, uid, opts):
     joFile.write("cd " + pwd + "\n")
     joFile.write(cmd + "\n")
     joFile.close()
-    sub = "qsub " + joName + " -q " + opts.queue[-1]
+    sub = "qsub " + joName
     print "Submitting: " + sub
     os.system(sub)
 
