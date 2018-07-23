@@ -1088,7 +1088,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							v_tau_1 = tmpMuon->P4();
 							tmpJet = (Jet*)branchJet->At(taus[0]);
 							v_tau_0 = tmpJet->P4();
-							tmpMPT = (MissingET)branchMissingET->At(0);
+							tmpMPT = (MissingET*)branchMissingET->At(0);
 							v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
 							tmpJet = (Jet*)branchJet->At(bJet_0);
 							v_bJet_0 = tmpJet->P4();
