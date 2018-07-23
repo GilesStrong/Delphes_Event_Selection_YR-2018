@@ -12,7 +12,7 @@ bool debug = false;
 TLorentzVector getHiggs2Taus(TClonesArray* mpt, TLorentzVector t_0, TLorentzVector t_1) {
 	/*Returns 4-vector of Higgs->tau tau*/
 	TLorentzVector higgs, mPT;
-	mPT.SetPtEtaPhiM(mpt->At(0).MET, 0.0, mpt->At(0).Phi, 0.0); //TODO Check this
+	mPT.SetPtEtaPhiM(mpt->At(0)->MET, 0.0, mpt->At(0)->Phi, 0.0); //TODO Check this
 	higgs = t_0 + t_1 + mPT;
 	return higgs;
 }
@@ -23,7 +23,7 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 	if (bJets->size() == 2) { //Only two b jets found
 		*bJet_0 = (*bJets)[0];
 		*bJet_1 = (*bJets)[1];
-		if (jets->at(bJet_0).PT() < jets->at(bJet_1).PT()) {
+		if (jets->at(bJet_0)->PT() < jets->at(bJet_1)->PT()) {
 			*bJet_1 = (*bJets)[0];
 			*bJet_0 = (*bJets)[1];
 		}
@@ -34,10 +34,10 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 		TLorentzVector jet_i, jet_j, jet_combined;
 		int iMin, jMin;
 		for (int i : *bJets) {
-			jet_i = jets->at(bJet_1).P4;
+			jet_i = jets->at(bJet_1)->P4;
 			for (int j : *bJets) {
 				if (i == j) continue;
-				jet_j = jets->at(bJet_1).P4;
+				jet_j = jets->at(bJet_1)->P4;
 				jet_combined = jet_i + jet_j;
 				delta = std::abs(125-jet_combined.M());
 				if (deltaMin > delta || deltaMin < 0) {
@@ -49,7 +49,7 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 		}
 		*bJet_0 = iMin;
 		*bJet_1 = jMin;
-		if (jets->at(bJet_0).PT() < jets->at(bJet_1).PT()) {
+		if (jets->at(bJet_0)->PT() < jets->at(bJet_1)->PT()) {
 			*bJet_1 = iMin;
 			*bJet_0 = jMin;
 		}
@@ -995,26 +995,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_mu_mu_b_b_cutFlow->GetXaxis()->SetBinLabel(6, "0 #tau_{h}");
 	h_mu_mu_b_b_cutFlow->GetXaxis()->SetBinLabel(7, "m_{#tau#tau} Cut");
 	h_mu_mu_b_b_cutFlow->GetXaxis()->SetBinLabel(8, "m_{b#bar{b}} Cut");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(1, "hh->bb#tau#tau check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(2, "hh->bb#tau#tau pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(3, "MC-truth check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(4, "MC-truth pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(5, "b-jets check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(6, "b-jets pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(7, "#taus check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(8, "#taus pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(9, "h->#tau#tau->ee check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(10, "h->#tau#tau->ee pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(11, "h->#tau#tau->e#mu check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(12, "h->#tau#tau->e#mu pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(13, "h->#tau#tau->#mu#mu check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(14, "h->#tau#tau->#mu#mu pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(15, "h->#tau#tau->e#tau_{h} check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(16, "h->#tau#tau->e#tau_{h} pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(17, "h->#tau#tau->#mu#tau_{h} check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(18, "h->#tau#tau->#mu#tau_{h} pass");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(19, "h->#tau#tau->#tau_{h}#tau_{h} check");
-	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(20, "h->#tau#tau->#tau_{h}#tau_{h} pass");
 	std::cout << "Plots initialised\n";
 	//___________________________________________
 	//Load data__________________________________
@@ -1084,7 +1064,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					tmpJet = (Jet*) branchJet->At(i);
 					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax
-							&& tmpJet->Charge != branchMuon->At(muons[0]).Charge) { //Quality  OS tau
+							&& tmpJet->Charge != branchMuon->At(muons[0])->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
 					if (tmpJet->TauTag == 0 && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
@@ -1097,8 +1077,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					if (bJets.size() >= 2) {//Quality b jets pairs found
 						h_mu_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
 						if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
-							v_tau_1 = branchMuon->At(muons[0]).P4;
-							v_tau_0 = branchJet->At(taus[0]).P4;
+							v_tau_1 = branchMuon->At(muons[0])->P4;
+							v_tau_0 = branchJet->At(taus[0])->P4;
 							v_higgs_tt = getHiggs2Taus(branchMissingET, v_tau_0, v_tau_1);
 							v_bJet_0 = getBJet(reader, bJet_0);
 							v_bJet_1 = getBJet(reader, bJet_1);
@@ -1121,8 +1101,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							b_1_eta = v_bJet_1.Eta();
 							b_1_phi = v_bJet_1.Phi();
 							b_1_mass = v_bJet_1.M();
-							mPT_pT = branchMissingET->At(0).MET;
-							mPT_phi = branchMissingET->At(0).Phi;
+							mPT_pT = branchMissingET->At(0)->MET;
+							mPT_phi = branchMissingET->At(0)->Phi;
 							h_tt_pT = v_higgs_tt.Pt();
 							h_tt_eta = v_higgs_tt.Eta();
 							h_tt_phi = v_higgs_tt.Phi();
@@ -1160,9 +1140,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 		if (eventAccepted) continue;
 		}
 		std::cout << "Event loop complete\n";
-		eventTree->Delete();
-		inputData->Close();
-		delete reader;
 	}
 	std::cout << "All files complete\n";
 	//___________________________________________
@@ -1226,34 +1203,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_e_e_b_b_cutFlow->Write();
 	c_e_e_b_b_cutFlow->Print(("../outputs/" + outputName + "/e_e_b_b_cutFlow.pdf").c_str());
 	delete c_e_e_b_b_cutFlow;
-	TCanvas* c_mcTruth_cutFlow = new TCanvas();
-	mcTruthPlots["cuts"]->GetXaxis()->SetTitle("Cuts");
-	mcTruthPlots["cuts"]->GetYaxis()->SetTitle("Events");
-	mcTruthPlots["cuts"]->Draw();
-	mcTruthPlots["cuts"]->Write();
-	c_mcTruth_cutFlow->Print(("../outputs/" + outputName + "/mcTruth_cutFlow.pdf").c_str());
-	delete c_mcTruth_cutFlow;
-	TCanvas* c_mcTruth_bJetMatch = new TCanvas();
-	mcTruthPlots["bMatch"]->GetXaxis()->SetTitle("#DeltaR(b, jet)");
-	mcTruthPlots["bMatch"]->GetYaxis()->SetTitle("Events");
-	mcTruthPlots["bMatch"]->Draw();
-	mcTruthPlots["bMatch"]->Write();
-	c_mcTruth_bJetMatch->Print(("../outputs/" + outputName + "/mcTruth_bMatch.pdf").c_str());
-	delete c_mcTruth_bJetMatch;
-	TCanvas* c_mcTruth_tauJetMatch = new TCanvas();
-	mcTruthPlots["tauMatch"]->GetXaxis()->SetTitle("#DeltaR(#tau, jet)");
-	mcTruthPlots["tauMatch"]->GetYaxis()->SetTitle("Events");
-	mcTruthPlots["tauMatch"]->Draw();
-	mcTruthPlots["tauMatch"]->Write();
-	c_mcTruth_tauJetMatch->Print(("../outputs/" + outputName + "/mcTruth_tauMatch.pdf").c_str());
-	delete c_mcTruth_tauJetMatch;
-	TCanvas* c_mcTruth_higgsDecay = new TCanvas();
-	mcTruthPlots["higgsDecay"]->GetXaxis()->SetTitle("Higgs product |PID|");
-	mcTruthPlots["higgsDecay"]->GetYaxis()->SetTitle("Events");
-	mcTruthPlots["higgsDecay"]->Draw();
-	mcTruthPlots["higgsDecay"]->Write();
-	c_mcTruth_higgsDecay->Print(("../outputs/" + outputName + "/mcTruth_higgsDecay.pdf").c_str());
-	delete c_mcTruth_higgsDecay;
 	std::cout << "Plots created\n";
 	//___________________________________________
 	//Save datasets______________________________
