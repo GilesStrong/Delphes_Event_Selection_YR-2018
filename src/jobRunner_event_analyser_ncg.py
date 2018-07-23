@@ -8,6 +8,7 @@ from data import *
 
 pwd = os.getcwd()
 userDir = "/home/t3cms/giles/"
+softDir = "/exper-sw/cmst3/cmssw/users/giles/Simple_Delphes_Event_Selection/src/"
 userStorage = '/lstore/cms/giles/HLStudies/'
 
 def makeJOFile(inputFile, uid, opts):
@@ -20,9 +21,9 @@ def makeJOFile(inputFile, uid, opts):
     joFile = open(joName, "w")
     joFile.write("echo Beginning\ job\n")
     joFile.write("source " + userDir + ".bashrc\n")
-    joFile.write("export X509_USER_PROXY=" + userDir + "x509up_uXXXX")
+    joFile.write("export X509_USER_PROXY=" + userDir + "x509up_uXXXX\n")
     joFile.write("echo Paths\ set\n")
-    joFile.write("cd " + pwd + "\n")
+    joFile.write("cd " + softDir + "\n")
     joFile.write(cmd + "\n")
     joFile.close()
     sub = "qsub " + joName
