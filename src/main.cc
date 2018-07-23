@@ -24,8 +24,8 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 	if (bJets->size() == 2) { //Only two b jets found
 		*bJet_0 = (*bJets)[0];
 		*bJet_1 = (*bJets)[1];
-		jet0 = jets->At(0);
-		jet1 = jets->At(1);
+		jet0 = (Jet*)jets->At(0);
+		jet1 = (Jet*)jets->At(1);
 		if (jet0->PT < jet1->PT) {
 			*bJet_1 = (*bJets)[0];
 			*bJet_0 = (*bJets)[1];
@@ -37,10 +37,10 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 		TLorentzVector jet_combined;
 		int iMin, jMin;
 		for (int i : *bJets) {
-			jet0 = jets->At(i);
+			jet0 = (Jet*)jets->At(i);
 			for (int j : *bJets) {
 				if (i == j) continue;
-				jet1 = jets->At(j);jet_i = jet0->P4;
+				jet1 = (Jet*)jets->At(j);
 				jet_combined = jet1->P4 + jet0->P4;
 				delta = std::abs(125-jet_combined.M());
 				if (deltaMin > delta || deltaMin < 0) {
@@ -52,8 +52,8 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 		}
 		*bJet_0 = iMin;
 		*bJet_1 = jMin;
-		jet0 = jets->At(bJet_0);
-		jet1 = jets->At(bJet_1);
+		jet0 = (Jet*)jets->At(bJet_0);
+		jet1 = (Jet*)jets->At(bJet_1);
 		if (jet0->PT < jet1->PT) {
 			*bJet_1 = iMin;
 			*bJet_0 = jMin;
@@ -1084,12 +1084,15 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 					if (bJets.size() >= 2) {//Quality b jets pairs found
 						h_mu_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
 						if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
-							v_tau_1 = branchMuon->At(muons[0])->P4;
-							v_tau_0 = branchJet->At(taus[0])->P4;
-							tmpMPT = branchMissingET->At(0);
+							v_tau_1 = tmpMuon->P4;
+							tmpJet = (Jet*)branchJet->At(taus[0])
+							v_tau_0 = tmpJet->P4;
+							tmpMPT = (MissingET)branchMissingET->At(0);
 							v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
-							v_bJet_0 = getBJet(reader, bJet_0);
-							v_bJet_1 = getBJet(reader, bJet_1);
+							tmpJet = (Jet*)branchJet->At(bJet_0)
+							v_bJet_0 = tmpJet->P4;
+							tmpJet = (Jet*)branchJet->At(bJet_1)
+							v_bJet_1 = tmpJet->P4;
 							v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
 							v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 							if (debug) std::cout << "Accepted mu_tau_b_b event\n";
