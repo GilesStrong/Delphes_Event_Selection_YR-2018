@@ -1011,6 +1011,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
 	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
+	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
 	std::cout << "Data loaded\n";
 	//_______________________________________
 	//Loop through events____________________
@@ -1085,13 +1086,13 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 						h_mu_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
 						if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
 							v_tau_1 = tmpMuon->P4();
-							tmpJet = (Jet*)branchJet->At(taus[0])
+							tmpJet = (Jet*)branchJet->At(taus[0]);
 							v_tau_0 = tmpJet->P4();
 							tmpMPT = (MissingET)branchMissingET->At(0);
 							v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
-							tmpJet = (Jet*)branchJet->At(bJet_0)
+							tmpJet = (Jet*)branchJet->At(bJet_0);
 							v_bJet_0 = tmpJet->P4();
-							tmpJet = (Jet*)branchJet->At(bJet_1)
+							tmpJet = (Jet*)branchJet->At(bJet_1);
 							v_bJet_1 = tmpJet->P4();
 							v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
 							v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
@@ -1139,7 +1140,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
-							weight = treeReader->Weight;
+							weight = branchWeights->At(0);
 							mu_tau_b_b->Fill();
 							h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
