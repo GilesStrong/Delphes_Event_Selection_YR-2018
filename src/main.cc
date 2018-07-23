@@ -20,7 +20,7 @@ TLorentzVector getHiggs2Taus(MissingET* mpt, TLorentzVector t_0, TLorentzVector 
 bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* bJet_1) {
 	/*Checks is a pair of b-jets exists, returning true if so and pointing bJet_0 and bJet_1 to
 	selected jets. Selects pair of jets invariant mass closest to 125 GeV*/
-	Jet *jet0, jet1;
+	Jet *jet0, *jet1;
 	if (bJets->size() == 2) { //Only two b jets found
 		*bJet_0 = (*bJets)[0];
 		*bJet_1 = (*bJets)[1];
