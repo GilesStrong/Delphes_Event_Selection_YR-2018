@@ -1140,7 +1140,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
-							weight = branchWeights->At(0);
+							weight = *(double*)branchWeights->At(0);
 							mu_tau_b_b->Fill();
 							h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
