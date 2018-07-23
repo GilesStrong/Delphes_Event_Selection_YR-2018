@@ -619,7 +619,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	//___________________________________________
 	//Initialise plots___________________________
 	std::cout << "Initialising plot\n";
-	TH1D* h_datasetSizes = new TH1D("Dataset_sizes", "Dataset sizes", 7, -0.7, 0.7);
+	TH1D* h_datasetSizes = new TH1D("Dataset_sizes", "Dataset sizes", 4, -0.4, 0.4);
 	TH1D* h_e_tau_b_b_cutFlow;
 	TH1D* h_mu_tau_b_b_cutFlow;
 	TH1D* h_tau_tau_b_b_cutFlow;
@@ -630,9 +630,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_datasetSizes->GetXaxis()->SetBinLabel(2, "#mu #tau_{h} b #bar{b}");
 	h_datasetSizes->GetXaxis()->SetBinLabel(3, "e #tau_{h} b #bar{b}");
 	h_datasetSizes->GetXaxis()->SetBinLabel(4, "#tau_{h} #tau_{h} b #bar{b}");
-	h_datasetSizes->GetXaxis()->SetBinLabel(5, "e e b #bar{b}");
-	h_datasetSizes->GetXaxis()->SetBinLabel(6, "e #mu b #bar{b}");
-	h_datasetSizes->GetXaxis()->SetBinLabel(7, "#mu #mu b #bar{b}");
 	h_e_tau_b_b_cutFlow->GetXaxis()->SetBinLabel(1, "All");
 	h_e_tau_b_b_cutFlow->GetXaxis()->SetBinLabel(2, "Quality e");
 	h_e_tau_b_b_cutFlow->GetXaxis()->SetBinLabel(3, "1 e & 0 #mu");

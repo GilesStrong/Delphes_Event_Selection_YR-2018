@@ -8,12 +8,12 @@
 #ifndef FINALSTATECUTS_HH_
 #define FINALSTATECUTS_HH_
 
-double ePTMin = 24.0; //Gev
+double ePTMin = 27.0; //Gev
 double eEtaMax = 2.1;
 double eIsoMax = 0.1;
-double muPTMin = 19.0; //Gev
+double muPTMin = 23.0; //Gev
 double muEtaMax = 2.1;
-double muIsoMax = 0.1;
+double muIsoMax = 0.15;
 double ePTMinAdd = 10.0; //Gev
 double eEtaMaxAdd = 2.5;
 double eIsoMaxAdd = 0.3;
