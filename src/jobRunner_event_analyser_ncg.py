@@ -30,7 +30,7 @@ def makeJOFile(inputFile, uid, opts):
     joFile.close()
     sub = "qsub " + joName
     print "Submitting: " + sub
-    #os.system(sub)
+    os.system(sub)
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = __doc__)
@@ -48,4 +48,4 @@ if __name__ == "__main__":
 
     for i, f in enumerate(files):
         makeJOFile(loc+f, i, opts)
-        break
+        #break
