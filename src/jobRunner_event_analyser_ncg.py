@@ -10,7 +10,7 @@ softDir = "/lstore/cms/giles/Simple_Delphes_Event_Selection/src/"
 userStorage = '/lstore/cms/giles/HLStudies/'
 
 def makeJOFile(inputFile, uid, opts):
-    outputFile = userStorage + opts.sample + "/" + opts.sample + "_" + str(uid)
+    outputFile = opts.sample + "_" + str(uid)
     cmd = softDir + "delphes_event_selection "
     cmd += "-i " + inputFile
     cmd += " -o " + outputFile
@@ -29,7 +29,7 @@ def makeJOFile(inputFile, uid, opts):
     joFile.close()
     sub = "qsub " + joName
     print "Submitting: " + sub
-    os.system(sub)
+    #os.system(sub)
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = __doc__)

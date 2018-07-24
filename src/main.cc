@@ -117,7 +117,8 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 void makeDirs(std::string outputName) {
 	/*Makes directory structure for saving outputs*/
 	std::vector<std::string> dirs;
-	dirs.push_back(outputName);
+	dirs.push_back("../outputs");
+	dirs.push_back("../outputs/" + outputName);
 	for (std::string dir : dirs) {
 		system((char*)("mkdir -p " + dir).c_str());
 	}
