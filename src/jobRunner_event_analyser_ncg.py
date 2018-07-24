@@ -6,24 +6,25 @@ import os.path
 import optparse
 from data import *
 
-pwd = os.getcwd()
-userDir = "/home/t3cms/giles/"
-softDir = "/exper-sw/cmst3/cmssw/users/giles/Simple_Delphes_Event_Selection/src/"
+softDir = "/lstore/cms/giles/Simple_Delphes_Event_Selection/src/"
 userStorage = '/lstore/cms/giles/HLStudies/'
 
 def makeJOFile(inputFile, uid, opts):
     outputFile = userStorage + opts.sample + "/" + opts.sample + "_" + str(uid)
-    cmd = "./delphes_event_selection "
+    cmd = "./" + softDir + "delphes_event_selection "
     cmd += "-i " + inputFile
     cmd += " -o " + outputFile
     cmd += " -d " + str(opts.debug[-1])
     joName = "analysis_" + str(uid) + ".job"
     joFile = open(joName, "w")
     joFile.write("echo Beginning\ job\n")
-    joFile.write("source " + userDir + ".bashrc\n")
-    joFile.write("export X509_USER_PROXY=" + userDir + "x509up_uXXXX\n")
+    joFile.write("module load gcc-4.8.3\n")
+    joFile.write("module load python-2.7.11\n")
+    joFile.write("export PATH=/lstore/cms/giles/programs/bin:$PATH\n")
+    joFile.write("export LD_LIBRARY_PATH=/lstore/cms/giles/programs/lib64/:/lstore/cms/giles/programs/lib/:/lstore/cms/giles/programs/lib/root/:/lstore/cms/giles/programs/delphes/:$LD_LIBRARY_PATH\n")
+    joFile.write("source /exper-sw/cmst3/cmssw/users/giles/programs/bin/thisroot.sh\n")
+    joFile.write("export X509_USER_PROXY=/lstore/cms/giles/x509up_uXXXX\n")
     joFile.write("echo Paths\ set\n")
-    joFile.write("cd " + softDir + "\n")
     joFile.write(cmd + "\n")
     joFile.close()
     sub = "qsub " + joName
