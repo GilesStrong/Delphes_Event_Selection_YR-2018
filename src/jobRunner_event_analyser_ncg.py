@@ -11,7 +11,7 @@ userStorage = '/lstore/cms/giles/HLStudies/'
 
 def makeJOFile(inputFile, uid, opts):
     outputFile = opts.sample + "_" + str(uid)
-    cmd = softDir + "delphes_event_selection "
+    cmd = "./delphes_event_selection "
     cmd += "-i " + inputFile
     cmd += " -o " + outputFile
     cmd += " -d " + str(opts.debug[-1])
@@ -24,6 +24,7 @@ def makeJOFile(inputFile, uid, opts):
     joFile.write("export LD_LIBRARY_PATH=/lstore/cms/giles/programs/lib64/:/lstore/cms/giles/programs/lib/:/lstore/cms/giles/programs/lib/root/:/lstore/cms/giles/programs/delphes/:$LD_LIBRARY_PATH\n")
     joFile.write("source lstore/cms/giles/programs/bin/thisroot.sh\n")
     joFile.write("export X509_USER_PROXY=/lstore/cms/giles/x509up_uXXXX\n")
+    joFile.write("cd " + softDir + "\n")
     joFile.write("echo Paths\ set\n")
     joFile.write(cmd + "\n")
     joFile.close()
