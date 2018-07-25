@@ -258,9 +258,9 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	TChain *chain = new TChain("Delphes");
 	chain->Add(input.c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
-	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
+	TClonesArray *branchElectron = treeReader->UseBranch("ElectronCHS");
 	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
-	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
+	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	treeReader->ReadEntry(cEvent);
 	if (debug) std::cout << "Loaded info\n";
@@ -655,8 +655,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchMuon = treeReader->UseBranch("MuonLoose");
-	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
+	TClonesArray *branchElectron = treeReader->UseBranch("ElectronCHS");
+	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
 	std::cout << "Data loaded\n";
