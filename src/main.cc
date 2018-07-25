@@ -656,7 +656,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchMuon = treeReader->UseBranch("MuonLoose");
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchJet = treeReader->UseBranch("Jet");
+	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
 	TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
 	std::cout << "Data loaded\n";
