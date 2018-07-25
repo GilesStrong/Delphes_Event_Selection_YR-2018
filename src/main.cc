@@ -14,6 +14,7 @@ bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int
 	the	selected particles*/
 	Jet *tau0, *tau1;
 	std::vector<std::pair<int, int> > pairs; //Initialise array for OS tau pairs
+	if (debug) std::cout << taus.size() << " tau jets found\n";
 	for (int t0 : *taus) { //Loop through taus
 		for (int t1 : *taus) {
 			if (t0 == t1) continue;
@@ -24,6 +25,7 @@ bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int
 			}
 		}
 	}
+	if (debug) std::cout << taus.size() << " OS tau-jet pairs found\n";
 	if (pairs.size() == 1) { //Only one OS pair found
 		tau0 = (Jet*)jets->At(pairs[0].first);
 		tau1 = (Jet*)jets->At(pairs[0].second);
@@ -256,10 +258,10 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	TChain *chain = new TChain("Delphes");
 	chain->Add(input.c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
-	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchMuon = treeReader->UseBranch("MuonLoose");
-	TClonesArray *branchJet = treeReader->UseBranch("Jet");
-	TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
+	TClonesArray *branchElectron = treeReader->UseBranch("ElectronCHS");
+	TClonesArray *branchMuon = treeReader->UseBranch("MuonTightCHS");
+	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
+	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	treeReader->ReadEntry(cEvent);
 	if (debug) std::cout << "Loaded info\n";
 	//___________________________________________
@@ -652,10 +654,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	TChain *chain = new TChain("Delphes");
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
-	TClonesArray *branchMuon = treeReader->UseBranch("MuonLoose");
-	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchJet = treeReader->UseBranch("Jet");
-	TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
+	TClonesArray *branchMuon = treeReader->UseBranch("MuonTightCHS");
+	TClonesArray *branchElectron = treeReader->UseBranch("ElectronCHS");
+	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
+	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
 	std::cout << "Data loaded\n";
 	//_______________________________________
@@ -669,6 +671,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	Electron* tmpElectron;
 	Muon* tmpMuon;
 	MissingET* tmpMPT;
+	Weight* tmpWeight;
 	std::cout << "Beginning event loop\n";
 	for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
 		if (debug) std::cout << "Loading event " << cEvent << "\n";
@@ -906,7 +909,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
-							weight = *(double*)branchWeights->At(0);
+							tmpWeight = (Weight*)branchWeights->At(0)
+							weight = tmpWeight.Weight;
 							e_tau_b_b->Fill();
 							h_datasetSizes->Fill("e #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
@@ -949,8 +953,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
 					tmpJet = (Jet*) branchJet->At(i);
 					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
-							&& std::abs(tmpJet->Eta) < tauEtaMax
-							&& tmpJet->Charge != tmpElectron->Charge) { //Quality  OS tau
+							&& std::abs(tmpJet->Eta) < tauEtaMax) { //Quality tau
 						taus.push_back(i);
 					}
 					if (tmpJet->TauTag == 0 && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
