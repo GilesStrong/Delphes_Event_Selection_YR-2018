@@ -654,10 +654,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	TChain *chain = new TChain("Delphes");
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
-	TClonesArray *branchMuon = treeReader->UseBranch("MuonLoose");
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
+	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
 	TClonesArray *branchJet = treeReader->UseBranch("Jet");
-	TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
+	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
 	std::cout << "Data loaded\n";
 	//_______________________________________
