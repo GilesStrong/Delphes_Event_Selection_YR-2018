@@ -261,7 +261,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
 	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
 	TClonesArray *branchJet = treeReader->UseBranch("Jet");
-	TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
+	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	treeReader->ReadEntry(cEvent);
 	if (debug) std::cout << "Loaded info\n";
 	//___________________________________________
