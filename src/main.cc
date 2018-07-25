@@ -14,7 +14,7 @@ bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int
 	the	selected particles*/
 	Jet *tau0, *tau1;
 	std::vector<std::pair<int, int> > pairs; //Initialise array for OS tau pairs
-	if (debug) std::cout << taus.size() << " tau jets found\n";
+	if (debug) std::cout << taus->size() << " tau jets found\n";
 	for (int t0 : *taus) { //Loop through taus
 		for (int t1 : *taus) {
 			if (t0 == t1) continue;
@@ -25,7 +25,7 @@ bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int
 			}
 		}
 	}
-	if (debug) std::cout << taus.size() << " OS tau-jet pairs found\n";
+	if (debug) std::cout << pairs << " OS tau-jet pairs found\n";
 	if (pairs.size() == 1) { //Only one OS pair found
 		tau0 = (Jet*)jets->At(pairs[0].first);
 		tau1 = (Jet*)jets->At(pairs[0].second);
@@ -790,7 +790,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
-							weight = *(double*)branchWeights->At(0);
+							tmpWeight = (Weight*)branchWeights->At(0);
+							weight = tmpWeight.Weight;
 							mu_tau_b_b->Fill();
 							h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
@@ -909,7 +910,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
-							tmpWeight = (Weight*)branchWeights->At(0)
+							tmpWeight = (Weight*)branchWeights->At(0);
 							weight = tmpWeight.Weight;
 							e_tau_b_b->Fill();
 							h_datasetSizes->Fill("e #tau_{h} b #bar{b}", 1);
@@ -1026,7 +1027,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 										&sphericityP, &spherocityP,
 										&aplanarityP, &aplanorityP,
 										&upsilonP, &dShapeP);
-								weight = *(double*)branchWeights->At(0);
+								tmpWeight = (Weight*)branchWeights->At(0);
+								weight = tmpWeight.Weight;
 								tau_tau_b_b->Fill();
 								h_datasetSizes->Fill("#tau_{h} #tau_{h} b #bar{b}", 1);
 								eventAccepted = true;
