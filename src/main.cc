@@ -25,7 +25,7 @@ bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int
 			}
 		}
 	}
-	if (debug) std::cout << pairs << " OS tau-jet pairs found\n";
+	if (debug) std::cout << pairs.size() << " OS tau-jet pairs found\n";
 	if (pairs.size() == 1) { //Only one OS pair found
 		tau0 = (Jet*)jets->At(pairs[0].first);
 		tau1 = (Jet*)jets->At(pairs[0].second);
