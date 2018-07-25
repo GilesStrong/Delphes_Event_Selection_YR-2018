@@ -260,7 +260,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
 	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
-	TClonesArray *branchJet = treeReader->UseBranch("Jet");
+	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	treeReader->ReadEntry(cEvent);
 	if (debug) std::cout << "Loaded info\n";
