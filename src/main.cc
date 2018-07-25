@@ -791,7 +791,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
 							tmpWeight = (Weight*)branchWeights->At(0);
-							weight = tmpWeight.Weight;
+							weight = tmpWeight->Weight;
 							mu_tau_b_b->Fill();
 							h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
@@ -911,7 +911,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
 							tmpWeight = (Weight*)branchWeights->At(0);
-							weight = tmpWeight.Weight;
+							weight = tmpWeight->Weight;
 							e_tau_b_b->Fill();
 							h_datasetSizes->Fill("e #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
@@ -1028,7 +1028,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 										&aplanarityP, &aplanorityP,
 										&upsilonP, &dShapeP);
 								tmpWeight = (Weight*)branchWeights->At(0);
-								weight = tmpWeight.Weight;
+								weight = tmpWeight->Weight;
 								tau_tau_b_b->Fill();
 								h_datasetSizes->Fill("#tau_{h} #tau_{h} b #bar{b}", 1);
 								eventAccepted = true;
