@@ -259,7 +259,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	chain->Add(input.c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchMuon = treeReader->UseBranch("MuonTight");
+	TClonesArray *branchMuon = treeReader->UseBranch("MuonTightCHS");
 	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	treeReader->ReadEntry(cEvent);
@@ -655,7 +655,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchMuon = treeReader->UseBranch("MuonTight");
+	TClonesArray *branchMuon = treeReader->UseBranch("MuonTightCHS");
 	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
