@@ -260,7 +260,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
 	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
-	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
+	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	treeReader->ReadEntry(cEvent);
 	if (debug) std::cout << "Loaded info\n";
@@ -656,7 +656,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
 	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
-	TClonesArray *branchJet = treeReader->UseBranch("JetPUPPI");
+	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
 	std::cout << "Data loaded\n";
@@ -723,7 +723,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
+					if (tmpJet->TauTag == 0 && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
@@ -843,7 +843,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpElectron->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
+					if (tmpJet->TauTag == 0 && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
@@ -957,7 +957,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& std::abs(tmpJet->Eta) < tauEtaMax) { //Quality tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
+					if (tmpJet->TauTag == 0 && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
