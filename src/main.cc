@@ -324,7 +324,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 		*eVis += jet->P4().E();
 		*nJets += 1;
 		if (jet->TauTag) *nTauJets += 1;
-		if (jet->BTag) *nBJets += 1;
+		if (tmpJet->BTag) *nBJets += 1;
 		if (*minJetPT == -1 | jet->PT < *minJetPT) *minJetPT = jet->PT;
 		*meanJetPT += jet->PT;
 		if (jet->PT > *maxJetPT) *maxJetPT = jet->PT;
@@ -718,12 +718,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				h_mu_tau_b_b_cutFlow->Fill("1 #mu & 0 e", 1);
 				for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
 					tmpJet = (Jet*) branchJet->At(i);
-					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+					if (tmpJet->TauTag == 1 && tmptmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax
 							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (jet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
+					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
@@ -838,12 +838,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				h_e_tau_b_b_cutFlow->Fill("1 e & 0 #mu", 1);
 				for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
 					tmpJet = (Jet*) branchJet->At(i);
-					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+					if (tmpJet->TauTag == 1 && tmptmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax
 							&& tmpJet->Charge != tmpElectron->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (jet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
+					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
@@ -953,11 +953,11 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				h_tau_tau_b_b_cutFlow->Fill("0 e & 0 #mu", 1);
 				for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
 					tmpJet = (Jet*) branchJet->At(i);
-					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+					if (tmpJet->TauTag == 1 && tmptmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax) { //Quality tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (jet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
+					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4)) && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
