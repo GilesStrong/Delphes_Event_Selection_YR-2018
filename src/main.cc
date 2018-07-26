@@ -259,7 +259,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	chain->Add(input.c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
+	TClonesArray *branchMuon = treeReader->UseBranch("MuonLoose");
 	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	treeReader->ReadEntry(cEvent);
@@ -655,7 +655,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchMuon = treeReader->UseBranch("MuonLooseCHS");
+	TClonesArray *branchMuon = treeReader->UseBranch("MuonLoose");
 	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	TClonesArray *branchMissingET = treeReader->UseBranch("PuppiMissingET");
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
@@ -723,6 +723,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
+					//tmpJet->BTag == 1
 					if (tmpJet->TauTag == 0 && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
