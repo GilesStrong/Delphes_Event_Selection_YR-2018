@@ -972,7 +972,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								tmpJet = (Jet*)branchJet->At(tau_0);
 								v_tau_0 = tmpJet->P4();
 								tmpJet = (Jet*)branchJet->At(tau_1);
-								v_tau_1 = tmpElectron->P4();
+								v_tau_1 = tmpJet->P4();
 								tmpMPT = (MissingET*)branchMissingET->At(0);
 								v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
 								tmpJet = (Jet*)branchJet->At(bJet_0);
