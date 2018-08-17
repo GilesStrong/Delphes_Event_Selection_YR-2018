@@ -39,7 +39,7 @@ double getFakeRate(double pt, double eta) {
 		fakerate *= tauFakeFactor30[tauWP];
 	}
 
-	if (debug) std::cout << "Light jet with pt eta" << pt << " " << eta << ", fake rate of " << fakerate << "\n";
+	if (debug) std::cout << "Light jet with pt eta " << pt << " " << eta << ", fake rate of " << fakerate << "\n";
 	return fakerate;
 }
 
