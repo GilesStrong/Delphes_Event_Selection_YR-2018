@@ -14,6 +14,9 @@
 #include <utility>
 #include <stdlib.h>
 #include <math.h>
+#include <iomanip>
+#include <random>
+#include <cmath>
 //Local
 #include "myMethods.hh"
 #include "classes/DelphesClasses.h"

@@ -27,7 +27,7 @@ double bJetEtaMax = 2.4;
 double higgsMassMin = 80; //GeV
 double higgsMassMax = 160; //GeV
 
-bool massCut = false;
+int tauWP = 54;
 
 void finalstateSet(std::string set) {
 	if (set == "e_tau_b_b") {

@@ -9,6 +9,68 @@
 
 bool debug = false;
 
+std::std::map<int, double> tauEfficiency = {{21, 0.31} {32, 0.45} {54, 0.61}};
+
+std::std::map<int, double> tauMistagRate30 = {{21, 0.0025} {32, 0.0049} {54, 0.0118}};
+std::std::map<int, double> tauMistagRate23 = {{21, 0.0023} {32, 0.0045} {54, 0.0110}};
+std::std::map<int, double> tauMistagRate14 = {{21, 0.0022} {32, 0.0041} {54, 0.0099}};
+
+std::std::map<int, double> tauFakeFactor30 = {{21, 1.00} {32, 2.05} {54, 5.10}};
+std::std::map<int, double> tauFakeFactor23 = {{21, 0.88} {32, 1.80} {54, 4.56}};
+std::std::map<int, double> tauFakeFactor14 = {{21, 0.52} {32, 1.00} {54, 2.41}};
+
+double getFakeRate(double pt, double eta) {
+	double fakerate = (-8.33753e-03)
+					 +((1.48065e-03)*pt)
+					 -((3.23176e-05)*pow(pt,2))
+					 +((2.91151e-07)*pow(pt,3))
+					 -((1.20285e-09)*pow(pt,4));
+	if (pt <= 190) {
+		fakerate += ((1.88459e-12)*pow(pt,5))*0.25;
+	} else {
+		fakerate += 0.00058;
+	}
+
+	if (std:abs(eta) < 1.4) {
+		fakerate *= tauFakeFactor14[tauWP];
+	} else if (std:abs(eta) < 2.3) {
+		fakerate *= tauFakeFactor23[tauWP];
+	} else {
+		fakerate *= tauFakeFactor30[tauWP];
+	}
+
+	if (debug) std::cout << "Light jet with pt eta" << pt << " " << eta << ", fake rate of " << fakerate << "\n";
+	return fakerate;
+}
+
+std::vector<std::pair<bool, double>> tagTaus(TClonesArray* jets) {
+	/*Apply new tau tagging*/
+	std::vector<bool> pass;
+	Jet* tmpJet;
+	std::random_device rd;
+	std::mt19937 e2(rd());
+	std::uniform_real_distribution<> dist(0.0, 1.0);
+
+	for (int i = 0; i < jets->GetEntries(); i++) { //Loop through jets
+		tmpJet = (Jet*) jets->At(i);
+		double tag = dist(e2);
+		if (tmpJet->TauWeight > 0.1) { //Real tau
+			if (tag <= tauEfficiency[tauWP]) { //Accept
+				pass.push_back(true);
+			} else {
+				pass.push_back(false);
+			}
+
+		} else { //Light jet
+			if (tag <= getFakeRate(jet->PT, jet->Eta)) { //Accept
+				pass.push_back(true);
+			} else {
+				pass.push_back(false);
+			}
+		}
+	}
+}
+
 bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int* tau_1) {
 	/*Checks whether an OS tau-tau pair exists, and if so returns true and points tau and lepton to
 	the	selected particles*/
@@ -672,6 +734,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	Muon* tmpMuon;
 	MissingET* tmpMPT;
 	Weight* tmpWeight;
+	std::std::vector<bool> tauTags;
 	std::cout << "Beginning event loop\n";
 	for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
 		if (debug) std::cout << "Loading event " << cEvent << "\n";
@@ -682,6 +745,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				100*cEvent/nEvents << "%\n";
 		h_datasetSizes->Fill("All", 1);
 		eventAccepted = false;
+		tauTags = tagTaus(branchJet); //get new tau tags
 		//Check for mu tau b b finalstates___
 		h_mu_tau_b_b_cutFlow->Fill("All", 1);
 		finalstateSet("mu_tau_b_b");
@@ -718,12 +782,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				h_mu_tau_b_b_cutFlow->Fill("1 #mu & 0 e", 1);
 				for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
 					tmpJet = (Jet*) branchJet->At(i);
-					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+					if (tauTags[i] == true && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax
 							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+					if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
@@ -838,12 +902,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				h_e_tau_b_b_cutFlow->Fill("1 e & 0 #mu", 1);
 				for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
 					tmpJet = (Jet*) branchJet->At(i);
-					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+					if (tauTags[i] == true && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax
 							&& tmpJet->Charge != tmpElectron->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+					if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
@@ -953,11 +1017,11 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				h_tau_tau_b_b_cutFlow->Fill("0 e & 0 #mu", 1);
 				for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
 					tmpJet = (Jet*) branchJet->At(i);
-					if (tmpJet->TauTag == 1 && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+					if (tauTags[i] == true && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
 							&& std::abs(tmpJet->Eta) < tauEtaMax) { //Quality tau
 						taus.push_back(i);
 					}
-					if (tmpJet->TauTag == 0 && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+					if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
