@@ -1,61 +1,15 @@
-signalLoc = "root://cmseos.fnal.gov//store/user/snowmass/noreplica/YR_Delphes_prod-luca-split/Delphes342pre14_split/GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_200PU/"
-signalFiles = ["GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_1.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_2.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_3.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_4.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_5.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_6.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_1_7.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_1.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_2.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_3.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_4.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_5.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_6.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_2_7.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_3_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_1.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_2.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_3.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_4.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_5.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_6.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_4_7.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_1.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_2.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_3.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_4.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_5.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_6.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_5_7.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_1.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_2.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_3.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_4.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_5.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_6.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_6_7.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_1.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_2.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_3.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_4.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_5.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_6.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_7_7.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_0.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_1.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_2.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_3.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_4.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_5.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_6.root",
-            "GluGluToHHTo2B2Tau_node_2_14TeV-madgraph_8_7.root"]
+signalLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_200PU/"
+signalFiles = [GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_1_0.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_1_1.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_2_0.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_3_0.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_3_1.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_4_0.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_4_1.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_5_0.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_5_1.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_6_0.root
+GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_6_1.root]
 
 
 ttbarLoc = "root://cms-xrd-global.cern.ch//store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15_hadd/TTJets_DiLept_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
