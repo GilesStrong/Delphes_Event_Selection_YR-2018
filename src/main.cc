@@ -734,7 +734,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	Muon* tmpMuon;
 	MissingET* tmpMPT;
 	Weight* tmpWeight;
-	std::std::vector<bool> tauTags;
+	std::vector<bool> tauTags;
 	std::cout << "Beginning event loop\n";
 	for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
 		if (debug) std::cout << "Loading event " << cEvent << "\n";
