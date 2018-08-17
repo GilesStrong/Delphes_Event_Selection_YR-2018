@@ -9,15 +9,15 @@
 
 bool debug = false;
 
-std::map<int, double> tauEfficiency = {{21, 0.31} {32, 0.45} {54, 0.61}};
+std::map<int, double> tauEfficiency = {{21, 0.31}, {32, 0.45}, {54, 0.61}};
 
-std::map<int, double> tauMistagRate30 = {{21, 0.0025} {32, 0.0049} {54, 0.0118}};
-std::map<int, double> tauMistagRate23 = {{21, 0.0023} {32, 0.0045} {54, 0.0110}};
-std::map<int, double> tauMistagRate14 = {{21, 0.0022} {32, 0.0041} {54, 0.0099}};
+std::map<int, double> tauMistagRate30 = {{21, 0.0025}, {32, 0.0049}, {54, 0.0118}};
+std::map<int, double> tauMistagRate23 = {{21, 0.0023}, {32, 0.0045}, {54, 0.0110}};
+std::map<int, double> tauMistagRate14 = {{21, 0.0022}, {32, 0.0041}, {54, 0.0099}};
 
-std::map<int, double> tauFakeFactor30 = {{21, 1.00} {32, 2.05} {54, 5.10}};
-std::map<int, double> tauFakeFactor23 = {{21, 0.88} {32, 1.80} {54, 4.56}};
-std::map<int, double> tauFakeFactor14 = {{21, 0.52} {32, 1.00} {54, 2.41}};
+std::map<int, double> tauFakeFactor30 = {{21, 1.00}, {32, 2.05}, {54, 5.10}};
+std::map<int, double> tauFakeFactor23 = {{21, 0.88}, {32, 1.80}, {54, 4.56}};
+std::map<int, double> tauFakeFactor14 = {{21, 0.52}, {32, 1.00}, {54, 2.41}};
 
 double getFakeRate(double pt, double eta) {
 	double fakerate = (-8.33753e-03)
