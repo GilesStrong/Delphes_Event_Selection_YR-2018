@@ -62,7 +62,7 @@ std::vector<bool> tagTaus(TClonesArray* jets) {
 			}
 
 		} else { //Light jet
-			if (tag <= getFakeRate(jet->PT, jet->Eta)) { //Accept
+			if (tag <= getFakeRate(tmpJet->PT, tmpJet->Eta)) { //Accept
 				pass.push_back(true);
 			} else {
 				pass.push_back(false);
