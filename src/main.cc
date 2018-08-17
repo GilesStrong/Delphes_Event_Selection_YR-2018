@@ -31,9 +31,9 @@ double getFakeRate(double pt, double eta) {
 		fakerate += 0.00058;
 	}
 
-	if (std:abs(eta) < 1.4) {
+	if (std::abs(eta) < 1.4) {
 		fakerate *= tauFakeFactor14[tauWP];
-	} else if (std:abs(eta) < 2.3) {
+	} else if (std::abs(eta) < 2.3) {
 		fakerate *= tauFakeFactor23[tauWP];
 	} else {
 		fakerate *= tauFakeFactor30[tauWP];
@@ -43,7 +43,7 @@ double getFakeRate(double pt, double eta) {
 	return fakerate;
 }
 
-std::vector<std::pair<bool, double>> tagTaus(TClonesArray* jets) {
+std::vector<bool> tagTaus(TClonesArray* jets) {
 	/*Apply new tau tagging*/
 	std::vector<bool> pass;
 	Jet* tmpJet;
