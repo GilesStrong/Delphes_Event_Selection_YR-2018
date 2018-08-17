@@ -69,8 +69,8 @@ std::vector<bool> tagTaus(TClonesArray* jets) {
 			}
 		}
 	}
-	
-	return tagTaus;
+
+	return pass;
 }
 
 bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int* tau_1) {
