@@ -19,6 +19,10 @@ std::map<int, double> tauFakeFactor30 = {{21, 1.00}, {32, 2.05}, {54, 5.10}};
 std::map<int, double> tauFakeFactor23 = {{21, 0.88}, {32, 1.80}, {54, 4.56}};
 std::map<int, double> tauFakeFactor14 = {{21, 0.52}, {32, 1.00}, {54, 2.41}};
 
+int nBPairs = 0;
+int nBG2 = 0
+int nBE2 = 0
+
 double getFakeRate(double pt, double eta) {
 	double fakerate = (-8.33753e-03)
 					 +((1.48065e-03)*pt)
@@ -138,6 +142,8 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 	selected jets. Selects pair of jets invariant mass closest to 125 GeV*/
 	Jet *jet0, *jet1;
 	if (bJets->size() == 2) { //Only two b jets found
+		nBE2++;
+		nBPairs++;
 		*bJet_0 = (*bJets)[0];
 		*bJet_1 = (*bJets)[1];
 		jet0 = (Jet*)jets->At(0);
@@ -148,6 +154,8 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 		}
 		return true;
 	} else if (bJets->size() > 2) { //More than two b jets: select pair with invariant mass closest to 125 GeV
+		nBG2++;
+		nBPairs++;
 		double deltaMin = -1;
 		double delta;
 		TLorentzVector jet_combined;
@@ -1162,4 +1170,5 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	delete h_mu_tau_b_b_cutFlow;
 	delete h_tau_tau_b_b_cutFlow;
 	//___________________________________________
+	std::cout << "#B pairs " << nBPairs << "#B > 2 " << nBG2 << "#B == 2 " << nBE2 << "\n";
 }
