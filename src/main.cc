@@ -20,8 +20,8 @@ std::map<int, double> tauFakeFactor23 = {{21, 0.88}, {32, 1.80}, {54, 4.56}};
 std::map<int, double> tauFakeFactor14 = {{21, 0.52}, {32, 1.00}, {54, 2.41}};
 
 int nBPairs = 0;
-int nBG2 = 0
-int nBE2 = 0
+int nBG2 = 0;
+int nBE2 = 0;
 
 double getFakeRate(double pt, double eta) {
 	double fakerate = (-8.33753e-03)
