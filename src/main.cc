@@ -79,6 +79,24 @@ std::vector<bool> tagTaus(TClonesArray* jets) {
 	return pass;
 }
 
+double getMT2(TLorentzVector lepton1_p4, TLorentzVector lepton2_p4,
+			  TLorentzVector bjet_1, TLorentzVector bjet_2,
+			  TLorentzVector met_p4) {
+    asymm_mt2_lester_bisect::disableCopyrightMessage();
+    const double mVisA = bjet_1.mass();
+    const double pxA = bjet_1.px();
+    const double pyA = bjet_1.py();
+    const double mVisB = bjet_2.mass();
+    const double pxB = bjet_2.px();
+    const double pyB = bjet_2.py();
+    const double pxMiss = lepton1_p4.px() + lepton2_p4.px() + met_p4.px();
+    const double pyMiss = lepton1_p4.py() + lepton2_p4.py() + met_p4.py();
+    double chiA = lepton1_p4.mass(); // hypothesised mass of invisible on side A.  Must be >=0.
+    double chiB = lepton2_p4.mass(); // hypothesised mass of invisible on side B.  Must be >=0.
+    double MT2 =  asymm_mt2_lester_bisect::get_mT2(mVisA, pxA, pyA,mVisB, pxB, pyB,pxMiss, pyMiss,chiA, chiB,0);
+    return MT2;
+}
+
 bool getOSTauTauPair(TClonesArray* jets, std::vector<int>* taus, int* tau_0, int* tau_1) {
 	/*Checks whether an OS tau-tau pair exists, and if so returns true and points tau and lepton to
 	the	selected particles*/
@@ -487,7 +505,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	//Reconstructed variables____________________
 	double h_tt_pT, h_tt_eta, h_tt_phi, h_tt_mass; //Higgs 0 variables
 	double h_bb_pT, h_bb_eta, h_bb_phi, h_bb_mass; //Higgs 1 variables
-	double diH_pT, diH_eta, diH_phi, diH_mass; //di-Higgs variables
+	double diH_pT, diH_eta, diH_phi, diH_mass, diH_mT2; //di-Higgs variables
 	//___________________________________________
 	//Global event variables_____________________
 	double hT, sT, centrality, eVis; //Global kinematics
@@ -534,6 +552,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	e_tau_b_b->Branch("diH_eta", &diH_eta);
 	e_tau_b_b->Branch("diH_phi", &diH_phi);
 	e_tau_b_b->Branch("diH_mass", &diH_mass);
+	e_tau_b_b->Branch("diH_mT2", &diH_mT2);
 	e_tau_b_b->Branch("hT", &hT);
 	e_tau_b_b->Branch("sT", &sT);
 	e_tau_b_b->Branch("centrality", &centrality);
@@ -596,6 +615,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	mu_tau_b_b->Branch("diH_eta", &diH_eta);
 	mu_tau_b_b->Branch("diH_phi", &diH_phi);
 	mu_tau_b_b->Branch("diH_mass", &diH_mass);
+	mu_tau_b_b->Branch("diH_mT2", &diH_mT2);
 	mu_tau_b_b->Branch("hT", &hT);
 	mu_tau_b_b->Branch("sT", &sT);
 	mu_tau_b_b->Branch("centrality", &centrality);
@@ -658,6 +678,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	tau_tau_b_b->Branch("diH_eta", &diH_eta);
 	tau_tau_b_b->Branch("diH_phi", &diH_phi);
 	tau_tau_b_b->Branch("diH_mass", &diH_mass);
+	tau_tau_b_b->Branch("diH_mT2", &diH_mT2);
 	tau_tau_b_b->Branch("hT", &hT);
 	tau_tau_b_b->Branch("sT", &sT);
 	tau_tau_b_b->Branch("centrality", &centrality);
@@ -849,6 +870,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							diH_eta = v_diHiggs.Eta();
 							diH_phi = v_diHiggs.Phi();
 							diH_mass = v_diHiggs.M();
+							diH_mT2 = getMT2(v_tau_0, v_tau_1, v_bJet_0, v_bJet_1, tmpMPT->P4());
 							getGlobalEventInfo(options["-i"], cEvent,
 									&hT, &sT, &centrality, &eVis,
 									&nJets, &nBJets, &nTauJets,
@@ -858,7 +880,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityA, &spherocityA,
 									&aplanarityA, &aplanorityA,
 									&upsilonA, &dShapeA);
-							getPrimaryEventShapes(v_tau_0, v_tau_1, v_bJet_0, v_bJet_1,
+							getPrimaryEventShapes(v_tau_0, v_tau_1, v_bJet_0, v_bJet_1, 
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
@@ -969,6 +991,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							diH_eta = v_diHiggs.Eta();
 							diH_phi = v_diHiggs.Phi();
 							diH_mass = v_diHiggs.M();
+							diH_mT2 = getMT2(v_tau_0, v_tau_1, v_bJet_0, v_bJet_1, tmpMPT->P4());
 							getGlobalEventInfo(options["-i"], cEvent,
 									&hT, &sT, &centrality, &eVis,
 									&nJets, &nBJets, &nTauJets,
@@ -1086,6 +1109,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								diH_eta = v_diHiggs.Eta();
 								diH_phi = v_diHiggs.Phi();
 								diH_mass = v_diHiggs.M();
+								diH_mT2 = getMT2(v_tau_0, v_tau_1, v_bJet_0, v_bJet_1, tmpMPT->P4());
 								getGlobalEventInfo(options["-i"], cEvent,
 										&hT, &sT, &centrality, &eVis,
 										&nJets, &nBJets, &nTauJets,

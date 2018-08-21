@@ -25,6 +25,7 @@
 #include "ExRootAnalysis/ExRootFilter.h"
 #include "ExRootAnalysis/ExRootClassifier.h"
 #include "finalstateCuts.hh"
+#include "Lester_mt2_bisect.h"
 //Root
 #include "TROOT.h"
 #include "TSystem.h"
