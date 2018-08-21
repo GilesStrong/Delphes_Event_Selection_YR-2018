@@ -1139,7 +1139,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	std::cout << "Event loop complete\n";
 	//___________________________________________
 	//Writing plots______________________________
-	TFile* outputFile = new TFile(("../outputs/" + outputName + "/" + outputName + ".root").c_str(), "recreate");
+	TFile* outputFile = new TFile((outputName + ".root").c_str(), "recreate");
 	outputFile->cd();
 	std::cout << "Creating plots\n";
 	TCanvas* c_datasetSizes = new TCanvas();
@@ -1148,7 +1148,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_datasetSizes->GetYaxis()->SetTitle("Events");
 	h_datasetSizes->Draw();
 	h_datasetSizes->Write();
-	c_datasetSizes->Print(("../outputs/" + outputName + "/datasetSizes.pdf").c_str());
 	delete c_datasetSizes;
 	TCanvas* c_e_tau_b_b_cutFlow = new TCanvas();
 	c_e_tau_b_b_cutFlow->SetLogy();
@@ -1156,7 +1155,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_e_tau_b_b_cutFlow->GetYaxis()->SetTitle("Events");
 	h_e_tau_b_b_cutFlow->Draw();
 	h_e_tau_b_b_cutFlow->Write();
-	c_e_tau_b_b_cutFlow->Print(("../outputs/" + outputName + "/e_tau_b_b_cutFlow.pdf").c_str());
 	delete c_e_tau_b_b_cutFlow;
 	TCanvas* c_mu_tau_b_b_cutFlow = new TCanvas();
 	c_mu_tau_b_b_cutFlow->SetLogy();
@@ -1164,7 +1162,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_mu_tau_b_b_cutFlow->GetYaxis()->SetTitle("Events");
 	h_mu_tau_b_b_cutFlow->Draw();
 	h_mu_tau_b_b_cutFlow->Write();
-	c_mu_tau_b_b_cutFlow->Print(("../outputs/" + outputName + "/mu_tau_b_b_cutFlow.pdf").c_str());
 	delete c_mu_tau_b_b_cutFlow;
 	TCanvas* c_tau_tau_b_b_cutFlow = new TCanvas();
 	c_tau_tau_b_b_cutFlow->SetLogy();
@@ -1172,7 +1169,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_tau_tau_b_b_cutFlow->GetYaxis()->SetTitle("Events");
 	h_tau_tau_b_b_cutFlow->Draw();
 	h_tau_tau_b_b_cutFlow->Write();
-	c_tau_tau_b_b_cutFlow->Print(("../outputs/" + outputName + "/tau_tau_b_b_cutFlow.pdf").c_str());
 	delete c_tau_tau_b_b_cutFlow;
 	std::cout << "Plots created\n";
 	//___________________________________________
