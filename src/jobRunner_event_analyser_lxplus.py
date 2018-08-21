@@ -50,6 +50,9 @@ if __name__ == "__main__":
     elif opts.sample == "ttbar":
         files = ttbarFiles
         loc = ttbarLoc
+    elif opts.sample == "ttbar_DiLepton":
+        files = ttbar_DiLeptonFiles
+        loc = ttbar_DiLeptonLoc
 
     for i, f in enumerate(files):
         makeJOFile(loc+f, i, opts)
