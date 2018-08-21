@@ -29,7 +29,7 @@ def makeJOFile(inputFile, uid, opts):
     joFile.write(cmd + "\n")
     joFile.close()
 
-    sub = "bsub -q " + queue + " " + jobName
+    sub = "bsub -q " + opts.queue + " " + jobName
     print "Submitting: " + sub
     os.system("chmod 744 " + jobName)
     os.system(sub)
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     parser = optparse.OptionParser(usage = __doc__)
     parser.add_option("-s", "--sample", dest = "sample", action = "store", help = "Sample to analyse")
     parser.add_option("-d", "--debug", dest = "debug", action = "store", default = [0], help = "Run in debug mode. {0,1}, default: 0")
-    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = ["normal"], help = "Queue to run jobs. Default: normal")
+    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = ["8nh"], help = "Queue to run jobs. Default: normal")
     opts, args = parser.parse_args()
 
     os.system("voms-proxy-init -voms cms -valid 72:00")
