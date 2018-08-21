@@ -14,7 +14,7 @@ def makeJOFile(inputFile, uid, opts):
     cmd = "./delphes_event_selection "
     cmd += "-i " + inputFile
     cmd += " -o " + outputFile
-    cmd += " -d " + str(opts.debug[-1])
+    cmd += " -d " + str(opts.debug)
 
     joName = "analysis_" + str(uid) + ".job"
     joFile = open(joName, "w")
@@ -37,8 +37,8 @@ def makeJOFile(inputFile, uid, opts):
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = __doc__)
     parser.add_option("-s", "--sample", dest = "sample", action = "store", help = "Sample to analyse")
-    parser.add_option("-d", "--debug", dest = "debug", action = "store", default = [0], help = "Run in debug mode. {0,1}, default: 0")
-    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = ["8nh"], help = "Queue to run jobs. Default: normal")
+    parser.add_option("-d", "--debug", dest = "debug", action = "store", default = 0, help = "Run in debug mode. {0,1}, default: 0")
+    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = "8nh", help = "Queue to run jobs. Default: normal")
     opts, args = parser.parse_args()
 
     os.system("voms-proxy-init -voms cms -valid 72:00")
