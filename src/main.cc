@@ -19,6 +19,8 @@ std::map<int, double> tauFakeFactor30 = {{21, 1.00}, {32, 2.05}, {54, 5.10}};
 std::map<int, double> tauFakeFactor23 = {{21, 0.88}, {32, 1.80}, {54, 4.56}};
 std::map<int, double> tauFakeFactor14 = {{21, 0.52}, {32, 1.00}, {54, 2.41}};
 
+std::map<int, double>  mvaFakeFactorReduction = {{21, 3.0}, {32, 2.0}, {54, 2.0}};
+
 double getFakeRate(double pt, double eta) {
 	double fakerate = (-8.33753e-03)
 					 +((1.48065e-03)*pt)
@@ -37,6 +39,10 @@ double getFakeRate(double pt, double eta) {
 		fakerate *= tauFakeFactor23[tauWP];
 	} else {
 		fakerate *= tauFakeFactor30[tauWP];
+	}
+
+	if (useMVATaus) {
+		fakerate /= mvaFakeFactorReduction[tauWP];
 	}
 
 	if (debug) std::cout << "Light jet with pt eta " << pt << " " << eta << ", fake rate of " << fakerate << "\n";

@@ -28,6 +28,7 @@ double higgsMassMin = 80; //GeV
 double higgsMassMax = 160; //GeV
 
 int tauWP = 54;
+bool useMVATaus = true;
 
 void finalstateSet(std::string set) {
 	if (set == "e_tau_b_b") {
