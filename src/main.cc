@@ -19,10 +19,6 @@ std::map<int, double> tauFakeFactor30 = {{21, 1.00}, {32, 2.05}, {54, 5.10}};
 std::map<int, double> tauFakeFactor23 = {{21, 0.88}, {32, 1.80}, {54, 4.56}};
 std::map<int, double> tauFakeFactor14 = {{21, 0.52}, {32, 1.00}, {54, 2.41}};
 
-int nBPairs = 0;
-int nBG2 = 0;
-int nBE2 = 0;
-
 double getFakeRate(double pt, double eta) {
 	double fakerate = (-8.33753e-03)
 					 +((1.48065e-03)*pt)
@@ -139,11 +135,9 @@ TLorentzVector getHiggs2Taus(MissingET* mpt, TLorentzVector t_0, TLorentzVector 
 
 bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* bJet_1) {
 	/*Checks is a pair of b-jets exists, returning true if so and pointing bJet_0 and bJet_1 to
-	selected jets. Selects pair of jets invariant mass closest to 125 GeV*/
+	selected jets. Selects pair of jets invariant mass closest to 111 GeV*/
 	Jet *jet0, *jet1;
 	if (bJets->size() == 2) { //Only two b jets found
-		nBE2++;
-		nBPairs++;
 		*bJet_0 = (*bJets)[0];
 		*bJet_1 = (*bJets)[1];
 		jet0 = (Jet*)jets->At(0);
@@ -153,9 +147,7 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 			*bJet_0 = (*bJets)[1];
 		}
 		return true;
-	} else if (bJets->size() > 2) { //More than two b jets: select pair with invariant mass closest to 125 GeV
-		nBG2++;
-		nBPairs++;
+	} else if (bJets->size() > 2) { //More than two b jets: select pair with invariant mass closest to 111 GeV
 		double deltaMin = -1;
 		double delta;
 		TLorentzVector jet_combined;
@@ -166,7 +158,7 @@ bool selectBJets(TClonesArray* jets, std::vector<int>* bJets, int* bJet_0, int* 
 				if (i == j) continue;
 				jet1 = (Jet*)jets->At(j);
 				jet_combined = jet1->P4() + jet0->P4();
-				delta = std::abs(125-jet_combined.M());
+				delta = std::abs(111-jet_combined.M());
 				if (deltaMin > delta || deltaMin < 0) {
 					deltaMin = delta;
 					iMin = i;
@@ -1170,5 +1162,4 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	delete h_mu_tau_b_b_cutFlow;
 	delete h_tau_tau_b_b_cutFlow;
 	//___________________________________________
-	std::cout << "#B pairs " << nBPairs << "#B > 2 " << nBG2 << "#B == 2 " << nBE2 << "\n";
 }
