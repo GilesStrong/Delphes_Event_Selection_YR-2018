@@ -3,7 +3,7 @@ ROOTCFLAGS=$(shell $(PREFIX)/root-config --cflags)
 ROOTLIBS=$(shell $(PREFIX)/root-config --libs)
 DELPHES=$(HOME)/programs/delphes
 C++ = g++
-C_FLAGS = -g
+C_FLAGS = -g -std=c++11
 INCLUDES = -I$(PREFIX)/include -I$(DELPHES) -I$(DELPHES)/external
 LIBRARIES = -lGenVector -lRooFit -lRooFitCore -lMinuit -O2 -lboost_regex -lboost_filesystem -lboost_system -L$(PREFIX)/lib -lDelphes -L$(DELPHES)
 ROOT = $(ROOTCFLAGS) $(ROOTLIBS)
