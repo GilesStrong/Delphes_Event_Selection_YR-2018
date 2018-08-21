@@ -1,4 +1,4 @@
-PREFIX=/afs/cern.ch/sw/lcg/app/releases/ROOT/6.06.00/x86_64-slc6-gcc49-opt/root/bin/
+PREFIX=/afs/cern.ch/sw/lcg/app/releases/ROOT/6.06.00/x86_64-slc6-gcc49-opt/root/
 ROOTCFLAGS=$(shell $(PREFIX)/root-config --cflags)
 ROOTLIBS=$(shell $(PREFIX)/root-config --libs)
 DELPHES=$(HOME)/programs/delphes
