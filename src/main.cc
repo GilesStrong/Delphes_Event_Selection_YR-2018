@@ -83,16 +83,16 @@ double getMT2(TLorentzVector lepton1_p4, TLorentzVector lepton2_p4,
 			  TLorentzVector bjet_1, TLorentzVector bjet_2,
 			  TLorentzVector met_p4) {
     asymm_mt2_lester_bisect::disableCopyrightMessage();
-    const double mVisA = bjet_1.mass();
-    const double pxA = bjet_1.px();
-    const double pyA = bjet_1.py();
-    const double mVisB = bjet_2.mass();
-    const double pxB = bjet_2.px();
-    const double pyB = bjet_2.py();
-    const double pxMiss = lepton1_p4.px() + lepton2_p4.px() + met_p4.px();
-    const double pyMiss = lepton1_p4.py() + lepton2_p4.py() + met_p4.py();
-    double chiA = lepton1_p4.mass(); // hypothesised mass of invisible on side A.  Must be >=0.
-    double chiB = lepton2_p4.mass(); // hypothesised mass of invisible on side B.  Must be >=0.
+    const double mVisA = bjet_1.M();
+    const double pxA = bjet_1.Px();
+    const double pyA = bjet_1.Py();
+    const double mVisB = bjet_2.M();
+    const double pxB = bjet_2.Px();
+    const double pyB = bjet_2.Py();
+    const double pxMiss = lepton1_p4.Px() + lepton2_p4.Px() + met_p4.Px();
+    const double pyMiss = lepton1_p4.Py() + lepton2_p4.Py() + met_p4.Py();
+    double chiA = lepton1_p4.M(); // hypothesised mass of invisible on side A.  Must be >=0.
+    double chiB = lepton2_p4.M(); // hypothesised mass of invisible on side B.  Must be >=0.
     double MT2 =  asymm_mt2_lester_bisect::get_mT2(mVisA, pxA, pyA,mVisB, pxB, pyB,pxMiss, pyMiss,chiA, chiB,0);
     return MT2;
 }
