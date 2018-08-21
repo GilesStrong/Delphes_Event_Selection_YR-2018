@@ -29,9 +29,9 @@ def makeJOFile(inputFile, uid, opts):
     joFile.write(cmd + "\n")
     joFile.close()
 
-    sub = "bsub -q " + opts.queue + " " + jobName
+    sub = "bsub -q " + opts.queue + " " + joName
     print "Submitting: " + sub
-    os.system("chmod 744 " + jobName)
+    os.system("chmod 744 " + joName)
     os.system(sub)
 
 if __name__ == "__main__":
