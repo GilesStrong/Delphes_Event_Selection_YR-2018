@@ -56,6 +56,7 @@ if __name__ == "__main__":
         loc = ttbar_DiLeptonLoc
 
     for i, f in enumerate(files):
+        print(i)
         if i >= opts.first:
             makeJOFile(loc+f, i, opts)
         #break
