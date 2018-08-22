@@ -888,10 +888,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&upsilonP, &dShapeP);
 							if (debug) std::cout << "1\n";
 
-							tmpWeight = (Weight*)branchWeights->At(0);
+							//tmpWeight = (Weight*)branchWeights->At(0);
 							if (debug) std::cout << "2\n";
 
-							weight = tmpWeight->Weight;
+							//weight = tmpWeight->Weight;
 							if (debug) std::cout << "3\n";
 
 							mu_tau_b_b->Fill();
