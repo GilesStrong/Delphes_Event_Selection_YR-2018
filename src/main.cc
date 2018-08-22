@@ -886,10 +886,20 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 									&sphericityP, &spherocityP,
 									&aplanarityP, &aplanorityP,
 									&upsilonP, &dShapeP);
+							if (debug) std::cout << "1\n";
+
 							tmpWeight = (Weight*)branchWeights->At(0);
+							if (debug) std::cout << "2\n";
+
 							weight = tmpWeight->Weight;
+							if (debug) std::cout << "3\n";
+
 							mu_tau_b_b->Fill();
+							if (debug) std::cout << "4\n";
+
 							h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
+							if (debug) std::cout << "5\n";
+
 							eventAccepted = true;
 							if (debug) std::cout << "Written mu_tau_b_b event\n";
 						}
