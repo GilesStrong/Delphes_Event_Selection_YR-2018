@@ -475,6 +475,7 @@ void getPrimaryEventShapes(TLorentzVector v_tau_0, TLorentzVector v_tau_1, TLore
 			sphericity, spherocity,
 			aplanarity, aplanority,
 			upsilon, dShape);
+	if (debug) std::cout << "Primary event shapes calculated\n";
 	//___________________________________________
 }
 
