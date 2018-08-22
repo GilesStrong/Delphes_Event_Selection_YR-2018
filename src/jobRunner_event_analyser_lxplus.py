@@ -55,6 +55,8 @@ if __name__ == "__main__":
         files = ttbar_DiLeptonFiles
         loc = ttbar_DiLeptonLoc
 
+    print(len(files), " files found, begining job submission from file ", opts.first)
+
     for i, f in enumerate(files):
         print(i)
         if i >= opts.first:
