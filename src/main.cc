@@ -891,6 +891,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							mu_tau_b_b->Fill();
 							h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
 							eventAccepted = true;
+							if (debug) std::cout << "Written mu_tau_b_b event\n";
 						}
 					}
 				}
