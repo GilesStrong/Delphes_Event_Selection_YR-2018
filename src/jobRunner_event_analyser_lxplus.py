@@ -39,6 +39,7 @@ if __name__ == "__main__":
     parser.add_option("-s", "--sample", dest = "sample", action = "store", help = "Sample to analyse")
     parser.add_option("-d", "--debug", dest = "debug", action = "store", default = 0, help = "Run in debug mode. {0,1}, default: 0")
     parser.add_option("-q", "--queue", dest = "queue", action = "store", default = "8nh", help = "Queue to run jobs. Default: normal")
+    parser.add_option("-f", "--first", dest = "first", action = "store", default = 0, help = "First job to run. Default: 0")
     opts, args = parser.parse_args()
 
     os.system("voms-proxy-init -voms cms -valid 72:00")
@@ -55,5 +56,6 @@ if __name__ == "__main__":
         loc = ttbar_DiLeptonLoc
 
     for i, f in enumerate(files):
+        if i < opts.first: continue
         makeJOFile(loc+f, i, opts)
         #break
