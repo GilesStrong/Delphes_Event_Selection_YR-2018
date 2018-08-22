@@ -1,6 +1,6 @@
 import glob
 
-ttbarLoc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_200PU"
+ttbarLoc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_200PU/"
 ttbarFiles = [x[x.rfind("/")+1:] for x in glob.glob(ttbarLoc + "/*.root")]
 
 signalLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_200PU/"
