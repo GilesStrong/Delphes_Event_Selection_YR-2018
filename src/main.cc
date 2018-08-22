@@ -329,6 +329,7 @@ void getEventShapes(std::vector<double> sphericityV, std::vector<double> spheroc
 	*aplanority = 3*spherocityV[2]/2;
 	*upsilon = sqrt(3.0)*(sphericityV[1]-sphericityV[2])/2;
 	*dShape = 27*spherocityV[0]*spherocityV[1]*spherocityV[2];
+	if (debug) std::cout << "Shapes calculated\n";
 }
 
 void getGlobalEventInfo(std::string input, Long64_t cEvent,
