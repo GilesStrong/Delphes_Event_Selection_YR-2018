@@ -1,7 +1,15 @@
 import glob
 
 ttbarLoc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_200PU/"
-ttbarFiles = [x[x.rfind("/")+1:] for x in glob.glob(ttbarLoc + "/*.root")]
+
+dy70Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-70to100_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
+dy100Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
+dy200Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
+dy400Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
+dy600Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-600to800_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
+dy800Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-800to1200_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
+dy1200Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-1200to2500_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
+dy2500Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14_hadd/DYJetsToLL_M-50_HT-2500toInf_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
 
 signalLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_200PU/"
 signalFiles = [
@@ -43,7 +51,6 @@ htautauFiles = [
 ]
 
 hbbLoc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/GluGluHToBB_M125_14TeV_powheg_pythia8_200PU/"
-hbbFiles = [x[x.rfind("/")+1:] for x in glob.glob(hbbLoc + "/*.root")]
 
 ttbar_DiLeptonLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15_hadd/TTJets_DiLept_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
 ttbar_DiLeptonFiles = [

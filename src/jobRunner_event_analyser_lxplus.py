@@ -48,18 +48,47 @@ if __name__ == "__main__":
     if opts.sample == "signal":
         files = signalFiles
         loc = signalLoc
+
     elif opts.sample == "ttbar":
-        files = ttbarFiles
         loc = ttbarLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+        
     elif opts.sample == "ttbar_DiLepton":
         files = ttbar_DiLeptonFiles
         loc = ttbar_DiLeptonLoc
+
     elif opts.sample == "htautau":
         files = htautauFiles
         loc = htautauLoc
+
     elif opts.sample == "hbb":
-        files = hbbFiles
         loc = hbbLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+
+    elif opts.sample == "dy70":
+        loc = dy70Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "dy100":
+        loc = dy100Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "dy200":
+        loc = dy200Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "dy400":
+        loc = dy400Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "dy600":
+        loc = dy600Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "dy800":
+        loc = dy800Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "dy1200":
+        loc = dy1200Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "dy2500":
+        loc = dy2500Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
 
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
