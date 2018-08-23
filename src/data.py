@@ -18,6 +18,30 @@ signalFiles = [
 "GluGluToHHTo2B2Tau_node_SM_14TeV-madgraph_6_1.root"
 ]
 
+htautauLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/GluGluHToTauTau_M125_14TeV_powheg_pythia8_200PU/"
+htautauFiles = [
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_10_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_1_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_11_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_12_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_13_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_14_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_15_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_16_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_17_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_18_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_19_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_20_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_2_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_3_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_4_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_5_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_6_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_7_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_8_0.root",
+"GluGluHToTauTau_M125_14TeV_powheg_pythia8_9_0.root"
+]
+
 ttbar_DiLeptonLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15_hadd/TTJets_DiLept_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
 ttbar_DiLeptonFiles = [
 "TTJets_DiLept_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU_10.root",

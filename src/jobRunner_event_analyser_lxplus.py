@@ -54,6 +54,9 @@ if __name__ == "__main__":
     elif opts.sample == "ttbar_DiLepton":
         files = ttbar_DiLeptonFiles
         loc = ttbar_DiLeptonLoc
+    elif opts.sample == "htautau":
+        files = htautauFiles
+        loc = htautauLoc
 
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
