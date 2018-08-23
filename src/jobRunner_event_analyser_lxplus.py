@@ -90,6 +90,34 @@ if __name__ == "__main__":
         loc = dy2500Loc
         files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
 
+    elif opts.sample == "qcd50":
+        files = qcd50Files
+        loc = qcd50Loc
+    elif opts.sample == "qcd80":
+        files = qcd80Files
+        loc = qcd80Loc
+    elif opts.sample == "qcd120":
+        files = qcd120Files
+        loc = qcd120Loc
+    elif opts.sample == "qcd170":
+        files = qcd170Files
+        loc = qcd170Loc
+    elif opts.sample == "qcd300":
+        files = qcd300Files
+        loc = qcd300Loc
+    elif opts.sample == "qcd470":
+        loc = qcd470Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == "qcd600":
+        files = qcd600Files
+        loc = qcd600Loc
+    elif opts.sample == "qcd800":
+        files = qcd800Files
+        loc = qcd800Loc
+    elif opts.sample == "qcd1000":
+        files = qcd1000Files
+        loc = qcd1000Loc
+
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
     for i, f in enumerate(files):
