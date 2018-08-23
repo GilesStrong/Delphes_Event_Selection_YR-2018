@@ -57,6 +57,9 @@ if __name__ == "__main__":
     elif opts.sample == "htautau":
         files = htautauFiles
         loc = htautauLoc
+    elif opts.sample == "hbb":
+        files = hbbFiles
+        loc = hbbLoc
 
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 

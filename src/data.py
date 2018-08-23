@@ -43,7 +43,7 @@ htautauFiles = [
 ]
 
 hbbLoc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/GluGluHToBB_M125_14TeV_powheg_pythia8_200PU/"
-hbbFiles = [x[x.rfind("/")+1:] for x in glob.glob(ttbarLoc + "/*.root")]
+hbbFiles = [x[x.rfind("/")+1:] for x in glob.glob(hbbLoc + "/*.root")]
 
 ttbar_DiLeptonLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15_hadd/TTJets_DiLept_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU/"
 ttbar_DiLeptonFiles = [
