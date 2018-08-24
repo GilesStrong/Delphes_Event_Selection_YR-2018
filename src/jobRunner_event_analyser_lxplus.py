@@ -120,6 +120,12 @@ if __name__ == "__main__":
     elif opts.sample == "qcd1000":
         files = qcd1000Files
         loc = qcd1000Loc
+    elif opts.sample == "qcdFlatA":
+        files = qcdFlatAFiles
+        loc = qcdFlatALoc
+    elif opts.sample == "qcdFlatB":
+        files = qcdFlatBFiles
+        loc = qcdFlatBLoc
 
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
