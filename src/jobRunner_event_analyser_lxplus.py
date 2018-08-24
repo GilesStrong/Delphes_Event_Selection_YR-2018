@@ -90,6 +90,9 @@ if __name__ == "__main__":
         loc = dy2500Loc
         files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
 
+    elif opts.sample == "qcd0":
+        files = qcd0Files
+        loc = qcd0Loc
     elif opts.sample == "qcd50":
         files = qcd50Files
         loc = qcd50Loc
