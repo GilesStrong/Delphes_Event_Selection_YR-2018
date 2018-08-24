@@ -132,6 +132,9 @@ if __name__ == "__main__":
     elif opts.sample == "qcdFlatEMB":
         files = qcdFlatEMBFiles
         loc = qcdFlatEMBLoc
+    elif opts.sample == "qcdFlatBBEM":
+        files = qcdFlatBBEMFiles
+        loc = qcdFlatBBEMLoc
 
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
