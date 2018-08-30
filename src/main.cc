@@ -412,7 +412,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 		*centrality += jet->PT;
 		*eVis += jet->P4().E();
 		*nJets += 1;
-		if (jet->TauTag) *nTauJets += 1;
+		if (jet->TauTag) *nTauJets += 1; // TODO: update to new skimming
 		if (jet->BTag) *nBJets += 1;
 		if (*minJetPT == -1 | jet->PT < *minJetPT) *minJetPT = jet->PT;
 		*meanJetPT += jet->PT;

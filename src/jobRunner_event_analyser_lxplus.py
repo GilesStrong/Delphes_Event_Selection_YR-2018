@@ -136,6 +136,25 @@ if __name__ == "__main__":
         files = qcdFlatBBEMFiles
         loc = qcdFlatBBEMLoc
 
+    elif opts.sample == 'singleTop':
+        loc = singleTopLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == 'singleAntiTop':
+        loc = singleAntiTopLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+
+    elif opts.sample == 'tZqll':
+        loc = tZqllLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+
+    elif opts.sample == 'WW':
+        loc = WWLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+        
+    elif opts.sample == "wJets":
+        files = wJetsFiles
+        loc = wJetsLoc
+
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
     for i, f in enumerate(files):
