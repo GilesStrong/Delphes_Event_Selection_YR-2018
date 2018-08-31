@@ -90,9 +90,9 @@ if __name__ == "__main__":
         loc = dy2500Loc
         files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
 
-    '''elif opts.sample == "qcd0":
-                    files = qcd0Files
-                    loc = qcd0Loc'''
+    elif opts.sample == "qcd0":
+        files = qcd0Files
+        loc = qcd0Loc
     elif opts.sample == "qcd50":
         files = qcd50Files
         loc = qcd50Loc
@@ -120,21 +120,21 @@ if __name__ == "__main__":
     elif opts.sample == "qcd1000":
         files = qcd1000Files
         loc = qcd1000Loc
-    '''elif opts.sample == "qcdFlatA":
-                    files = qcdFlatAFiles
-                    loc = qcdFlatALoc
-                elif opts.sample == "qcdFlatB":
-                    files = qcdFlatBFiles
-                    loc = qcdFlatBLoc
-                elif opts.sample == "qcdFlatEMA":
-                    files = qcdFlatEMAFiles
-                    loc = qcdFlatEMALoc
-                elif opts.sample == "qcdFlatEMB":
-                    files = qcdFlatEMBFiles
-                    loc = qcdFlatEMBLoc
-                elif opts.sample == "qcdFlatBBEM":
-                    files = qcdFlatBBEMFiles
-                    loc = qcdFlatBBEMLoc'''
+    elif opts.sample == "qcdFlatA":
+        files = qcdFlatAFiles
+        loc = qcdFlatALoc
+    elif opts.sample == "qcdFlatB":
+        files = qcdFlatBFiles
+        loc = qcdFlatBLoc
+    elif opts.sample == "qcdFlatEMA":
+        files = qcdFlatEMAFiles
+        loc = qcdFlatEMALoc
+    elif opts.sample == "qcdFlatEMB":
+        files = qcdFlatEMBFiles
+        loc = qcdFlatEMBLoc
+    elif opts.sample == "qcdFlatBBEM":
+        files = qcdFlatBBEMFiles
+        loc = qcdFlatBBEMLoc
 
     elif opts.sample == 'singleTop':
         loc = singleTopLoc
