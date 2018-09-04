@@ -1,11 +1,11 @@
 import glob
 
-ZH_HToBB_ZToQQ_M125Loc = "root://eoscms.cern.ch//store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/ZH_HToBB_ZToQQ_M125_14TeV_powheg_pythia8_200PU/"
-WminusH_HToBB_WToQQ_M125Loc = "root://eoscms.cern.ch//store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WminusH_HToBB_WToQQ_M125_14TeV_powheg_pythia8_200PU/"
-WplusH_HToBB_WToQQ_M125Loc = "root://eoscms.cern.ch//store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WplusH_HToBB_WToQQ_M125_14TeV_powheg_pythia8_200PU/"
-VHToNonbbLoc = "root://eoscms.cern.ch//store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/VHToNonbb_M125_14TeV_amcatnloFXFX_madspin_pythia8_200PU/"
+ZH_HToBB_ZToQQ_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/ZH_HToBB_ZToQQ_M125_14TeV_powheg_pythia8_200PU/"
+WminusH_HToBB_WToQQ_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WminusH_HToBB_WToQQ_M125_14TeV_powheg_pythia8_200PU/"
+WplusH_HToBB_WToQQ_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WplusH_HToBB_WToQQ_M125_14TeV_powheg_pythia8_200PU/"
+VHToNonbbLoc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/VHToNonbb_M125_14TeV_amcatnloFXFX_madspin_pythia8_200PU/"
 
-ZZTo2L2QLoc = "root://eoscms.cern.ch//store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/ZZTo2L2Q_14TeV_amcatnloFXFX_madspin_pythia8_200PU/"
+ZZTo2L2QLoc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/ZZTo2L2Q_14TeV_amcatnloFXFX_madspin_pythia8_200PU/"
 
 ttHToNonbbLoc = "root://dcache-cms-xrootd.desy.de//pnfs/desy.de/cms/tier2/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/ttHToNonbb_M125_TuneCUETP8M2_14TeV-powheg-pythia8_200PU/"
 ttHToNonbbFiles = [
