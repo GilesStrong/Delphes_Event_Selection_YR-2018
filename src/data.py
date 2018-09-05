@@ -1,5 +1,9 @@
 import glob
 
+ZH_HToBB_ZToLL_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/ZH_HToBB_ZToLL_M125_14TeV_powheg_pythia8_200PU/"
+WplusH_HToBB_WToLNu_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WplusH_HToBB_WToLNu_M125_14TeV_powheg_pythia8_200PU/"
+WminusH_HToBB_WToLNu_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WminusH_HToBB_WToLNu_M125_14TeV_powheg_pythia8_200PU/"
+
 ZH_HToBB_ZToQQ_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/ZH_HToBB_ZToQQ_M125_14TeV_powheg_pythia8_200PU/"
 WminusH_HToBB_WToQQ_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WminusH_HToBB_WToQQ_M125_14TeV_powheg_pythia8_200PU/"
 WplusH_HToBB_WToQQ_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/WplusH_HToBB_WToQQ_M125_14TeV_powheg_pythia8_200PU/"

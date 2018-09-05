@@ -181,6 +181,15 @@ if __name__ == "__main__":
     elif opts.sample == 'VHToNonbb':
         loc = VHToNonbbLoc
         files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == 'WplusH_HToBB_WToLNu_M125':
+        loc = WplusH_HToBB_WToLNu_M125Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == 'WminusH_HToBB_WToLNu_M125':
+        loc = WminusH_HToBB_WToLNu_M125Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+    elif opts.sample == 'ZH_HToBB_ZToLL_M125':
+        loc = ZH_HToBB_ZToLL_M125Loc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
 
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
