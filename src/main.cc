@@ -49,6 +49,23 @@ double getFakeRate(double pt, double eta) {
 	return fakerate;
 }
 
+std::vector<bool> tagTaus_old(TClonesArray* jets) {
+	/*Apply new tau tagging*/
+	std::vector<bool> pass;
+	Jet* tmpJet;
+
+	for (int i = 0; i < jets->GetEntries(); i++) { //Loop through jets
+		tmpJet = (Jet*) jets->At(i);
+		if (tmpJet->TauTag) {
+			pass.push_back(true);
+		} else {
+			pass.push_back(false);
+		}
+	}
+
+	return pass;
+}
+
 std::vector<bool> tagTaus(TClonesArray* jets) {
 	/*Apply new tau tagging*/
 	std::vector<bool> pass;
@@ -790,7 +807,11 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				100*cEvent/nEvents << "%\n";
 		h_datasetSizes->Fill("All", 1);
 		eventAccepted = false;
-		tauTags = tagTaus(branchJet); //get new tau tags
+		if (options["-i"].find("13TeV") != std::string::npos) {
+			tauTags = tagTaus_old(branchJet);
+		else{
+			tauTags = tagTaus(branchJet); //get new tau tags
+		}
 		//Check for mu tau b b finalstates___
 		h_mu_tau_b_b_cutFlow->Fill("All", 1);
 		finalstateSet("mu_tau_b_b");
