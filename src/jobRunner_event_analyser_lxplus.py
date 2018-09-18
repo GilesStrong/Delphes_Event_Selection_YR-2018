@@ -191,6 +191,10 @@ if __name__ == "__main__":
         loc = ZH_HToBB_ZToLL_M125Loc
         files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
 
+    elif opts.sample == 'signal_13TeV':
+        loc = signal_13TeVLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+
     print(len(files), " files found, begining job submission from file ", int(opts.first))
 
     for i, f in enumerate(files):
