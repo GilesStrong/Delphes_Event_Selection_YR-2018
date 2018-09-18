@@ -809,7 +809,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 		eventAccepted = false;
 		if (options["-i"].find("13TeV") != std::string::npos) {
 			tauTags = tagTaus_old(branchJet);
-		else{
+		} else {
 			tauTags = tagTaus(branchJet); //get new tau tags
 		}
 		//Check for mu tau b b finalstates___
