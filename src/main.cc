@@ -755,7 +755,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 		TClonesArray *branchMuon, *branchJet, *branchMissingET;
-	if (input.find("13TeV") != std::string::npos) {
+	if (options["-i"].find("13TeV") != std::string::npos) {
 		branchMuon = treeReader->UseBranch("Muon");
 		branchJet = treeReader->UseBranch("Jet");
 		branchMissingET = treeReader->UseBranch("MissingET");
