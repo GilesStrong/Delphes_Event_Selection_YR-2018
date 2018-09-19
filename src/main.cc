@@ -853,9 +853,16 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tauTags[i] == false && (tmpJet->BTag & (1 << 1) ) && tmpJet->PT > bJetPTMin
-							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
-						bJets.push_back(i);
+					if (options["-i"].find("13TeV") != std::string::npos) {
+						if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
+								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
+							bJets.push_back(i);
+						}
+					} else {
+						if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
+							bJets.push_back(i);
+						}
 					}
 				}
 				if (taus.size() >= 1) {//Quality tau
@@ -977,9 +984,16 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpElectron->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
-							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
-						bJets.push_back(i);
+					if (options["-i"].find("13TeV") != std::string::npos) {
+						if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
+								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
+							bJets.push_back(i);
+						}
+					} else {
+						if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
+							bJets.push_back(i);
+						}
 					}
 				}
 				if (taus.size() >= 1) {//Quality tau
@@ -1092,9 +1106,16 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& std::abs(tmpJet->Eta) < tauEtaMax) { //Quality tau
 						taus.push_back(i);
 					}
-					if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
-							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
-						bJets.push_back(i);
+					if (options["-i"].find("13TeV") != std::string::npos) {
+						if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
+								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
+							bJets.push_back(i);
+						}
+					} else {
+						if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
+							bJets.push_back(i);
+						}
 					}
 				}
 				if (taus.size() >= 2) {//2 quality taus
