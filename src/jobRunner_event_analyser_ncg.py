@@ -49,6 +49,10 @@ if __name__ == "__main__":
         files = ttbarFiles
         loc = ttbarLoc
 
+    elif opts.sample == "ttbar_13TeV":
+        loc = ttbar_13TeVLoc
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+
     for i, f in enumerate(files):
         makeJOFile(loc+f, i, opts)
         #break

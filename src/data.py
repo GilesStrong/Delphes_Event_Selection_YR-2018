@@ -1,5 +1,7 @@
 import glob
 
+ttbar_13TeVLoc = "/gstore/t3cms/store/user/gstrong/powheg_ttbar/PH_pp_tt_ll_13Tev_10M_py8/"
+
 signal_13TeVLoc = "/eos/experiment/amva4np/data/oxford_summer_2016/signal/non_res_diHiggs/bbtt/Delphes_output/MG5_pp_hh_bbtt_13TeV_10M_py8_Forced/"
 
 ZH_HToBB_ZToLL_M125Loc = "/eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/ZH_HToBB_ZToLL_M125_14TeV_powheg_pythia8_200PU/"
