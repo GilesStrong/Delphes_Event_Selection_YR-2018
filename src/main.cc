@@ -853,7 +853,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+					if (tauTags[i] == false && (tmpJet->BTag & (1 << 1) ) && tmpJet->PT > bJetPTMin
 							&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 						bJets.push_back(i);
 					}
