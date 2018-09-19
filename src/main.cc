@@ -365,7 +365,7 @@ void getGlobalEventInfo(std::string input, Long64_t cEvent,
 	chain->Add(input.c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchMuon, *branchJet, *branchMissingET;
-	if (input.find("13TeV") != std::string::npos) {
+	if (input.find("13Te") != std::string::npos) {
 		branchMuon = treeReader->UseBranch("Muon");
 		branchJet = treeReader->UseBranch("Jet");
 		branchMissingET = treeReader->UseBranch("MissingET");
@@ -772,7 +772,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 		TClonesArray *branchMuon, *branchJet, *branchMissingET;
-	if (options["-i"].find("13TeV") != std::string::npos) {
+	if (options["-i"].find("13Te") != std::string::npos) {
 		branchMuon = treeReader->UseBranch("Muon");
 		branchJet = treeReader->UseBranch("Jet");
 		branchMissingET = treeReader->UseBranch("MissingET");
@@ -807,7 +807,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				100*cEvent/nEvents << "%\n";
 		h_datasetSizes->Fill("All", 1);
 		eventAccepted = false;
-		if (options["-i"].find("13TeV") != std::string::npos) {
+		if (options["-i"].find("13Te") != std::string::npos) {
 			tauTags = tagTaus_old(branchJet);
 		} else {
 			tauTags = tagTaus(branchJet); //get new tau tags
@@ -853,7 +853,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (options["-i"].find("13TeV") != std::string::npos) {
+					if (options["-i"].find("13Te") != std::string::npos) {
 						if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
 								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 							bJets.push_back(i);
@@ -984,7 +984,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& tmpJet->Charge != tmpElectron->Charge) { //Quality  OS tau
 						taus.push_back(i);
 					}
-					if (options["-i"].find("13TeV") != std::string::npos) {
+					if (options["-i"].find("13Te") != std::string::npos) {
 						if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
 								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 							bJets.push_back(i);
@@ -1106,7 +1106,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							&& std::abs(tmpJet->Eta) < tauEtaMax) { //Quality tau
 						taus.push_back(i);
 					}
-					if (options["-i"].find("13TeV") != std::string::npos) {
+					if (options["-i"].find("13Te") != std::string::npos) {
 						if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
 								&& std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
 							bJets.push_back(i);
