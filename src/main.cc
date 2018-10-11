@@ -626,7 +626,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	//Check b jets_______________________________
 	GenParticle *bJet_0, *bJet_1;
 	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
-	if (!checkDiJet(branchJet, branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius)) {
+	if (!checkDiJet(branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius)) {
 		if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
 		return false; //tau-jet selection incorrect
 	}
@@ -644,7 +644,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	higgs = (GenParticle*)branchParticle->At(hTauTau);
 	if (options[0] == "tau" && options[1] == "tau") {
 		//h->tau_h tau_h_________________________
-		if (!checkDiJet(branchParticle, (Jet*)branchJet->At(l_0)->P4(), (Jet*)branchJet->At(l_1)->P4(), hTauTau, 15, &swap, jetRadius)) {
+		if (!checkDiJet(branchParticle, ((Jet*)branchJet->At(l_0))->P4(), ((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius)) {
 			if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
 			return false; //tau-jet selection incorrect
 		}
