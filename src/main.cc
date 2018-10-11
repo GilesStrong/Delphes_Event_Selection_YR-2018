@@ -563,8 +563,8 @@ bool checkDiJet(TClonesArray* particles,
 		std::cout << "Something's gone wrong in h->" + doubleToString(pID) + " -" + doubleToString(pID) + "!\n";
 		return false;
 	}
-	if (((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(&v_0) <
-        ((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(&v_1)) {
+	if (((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(*v_0) <
+        ((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(*v_1)) {
 		p_0 = higgs->D1;
         p_1 = higgs->D2;
         if (swap != NULL) *swap = 0;
@@ -575,8 +575,8 @@ bool checkDiJet(TClonesArray* particles,
     }
 	//___________________________________________
 	//Check jets_________________________________
-	double dR_0 = ((GenParticle*)particles->At(p_0))->P4().DeltaR(&v_0);
-	double dR_1 = ((GenParticle*)particles->At(p_1))->P4().DeltaR(&v_1);
+	double dR_0 = ((GenParticle*)particles->At(p_0))->P4().DeltaR(*v_0);
+	double dR_1 = ((GenParticle*)particles->At(p_1))->P4().DeltaR(*v_1);
 	if (dR_0 > R || dR_1 > R) { //particle(s) outside jet
 		return false;
 	}
