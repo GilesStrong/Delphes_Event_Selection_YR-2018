@@ -588,6 +588,7 @@ bool checkDiJet(TClonesArray* particles,
 int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* parent_1, TClonesArray* particles) {
 	/*Recursive search through child's ancestry for parent 0 or 1. If found returns 0 or 1. If not found returns -1*/
 	int ancestor = -1;
+	if (debug) std::cout << "size: " << particles->GetEntries() << ", mothers: " << child->M1  << " " << child->M2 << "\n";
 	GenParticle* mother;
 	if (child->M1 > 0) { //Check first mother
 		mother = (GenParticle*)particles->At(child->M1);
