@@ -504,6 +504,254 @@ void getPrimaryEventShapes(TLorentzVector v_tau_0, TLorentzVector v_tau_1, TLore
 	//___________________________________________
 }
 
+bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauTau=NULL) {
+	/*Make sure event is hh->bbtautau, and point hbb and htautau to the Higgs*/
+	bool hBBFound = false, hTauTauFound = false;
+	int nHiggs = 0;
+	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
+		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25 && ((GenParticle*)branchParticle->At(p))->PID == 22) { //Particle is Higgs
+			if (((GenParticle*)branchParticle->At(p))->D1 >= 0 && ((GenParticle*)branchParticle->At(p))->D2 >= 0) { //Daughters exists
+				if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
+						((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
+					nHiggs++;
+					if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 5
+							&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 5) { //Daughters are b quarks
+						hBBFound = true;
+						if (hBB != NULL) *hBB = p; //Point to Higgs
+						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+							return true;
+						}
+					}
+					if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 15
+							&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 15) { //Daughters are taus
+						hTauTauFound = true;
+						if (hTauTau != NULL) *hTauTau = p; //Point to Higgs
+						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+							return true;
+						}
+					}
+				}
+			}
+			if (nHiggs >= 2) break; //Both Higgs found
+		}
+	}
+	return false; //Both h->bb and h->tautau not found
+}
+
+bool checkDiJet(TClonesArray* particles,
+	TLorentzVector* v_0, TLorentzVector* v_1,
+	int mother, int pID,
+	int* swap, TH1D* dRPlot, double R) {
+	/*Checks whether the particles are within their nearest jet*/
+	//Associate particles to closest found jet___
+	int p_0 = -1, p_1 = -1;
+	GenParticle* higgs = (GenParticle*)particles->At(mother);
+	if (std::abs(((GenParticle*)particles->At(moveToEnd(higgs->D1, particles)))->PID) != pID) { //Make sure decays products are correct
+		std::cout << "Something's gone wrong in h->" + doubleToString(pID) + " -" + doubleToString(pID) + "!\n";
+		return false;
+	}
+	if (((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(v_0) <
+        ((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(v_1)) {
+		p_0 = higgs->D1;
+        p_1 = higgs->D2;
+        if (swap != NULL) *swap = 0;
+    } else {
+        p_0 = higgs->D2;
+		p_1 = higgs->D1;
+        if (swap != NULL) *swap = 1;
+    }
+	//___________________________________________
+	//Check jets_________________________________
+	double dR_0 = ((GenParticle*)particles->At(p_0))->P4().DeltaR(v_0);
+	double dR_1 = ((GenParticle*)particles->At(p_1))->P4().DeltaR(v_1);
+	if (dR_0 > R || dR_1 > R) { //particle(s) outside jet
+		return false;
+	}
+	//___________________________________________
+	return true;
+}
+
+int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* parent_1, TClonesArray* particles) {
+	/*Recursive search through child's ancestry for parent 0 or 1. If found returns 0 or 1. If not found returns -1*/
+	int ancestor = -1;
+	GenParticle* mother;
+	if (child->M1 > 0) { //Check first mother
+		mother = (GenParticle*)particles->At(child->M1);
+		if (mother->GetUniqueID() == parent_0->GetUniqueID()) {
+			return 0;
+		} else if (mother->GetUniqueID() == parent_1->GetUniqueID()) {
+			return 1;
+		} else {
+			ancestor = ancestrySearch(mother, parent_0, parent_1, particles); //Recursive search
+		}
+	}
+	if (ancestor == -1 && child->M2 > 0) { //Check second mother
+		mother = (GenParticle*)particles->At(child->M2);
+		if (mother->GetUniqueID() == parent_0->GetUniqueID()) {
+			return 0;
+		} else if (mother->GetUniqueID() == parent_1->GetUniqueID()) {
+			return 1;
+		} else {
+			ancestor = ancestrySearch(mother, parent_0, parent_1, particles); //Recursive search
+		}
+	}
+	return ancestor;
+}
+
+int moveToEnd(int p, TClonesArray* particles) {
+	/*Selects particle at end of 'decay' chain in event record*/
+	return p;
+	GenParticle* mother = (GenParticle*)particles->At(p);
+	while (((GenParticle*)particles->At(mother->D1))->PID == mother->PID &&
+			((GenParticle*)particles->At(mother->D2))->PID == mother->PID) {
+		p = mother->D1;
+		mother = (GenParticle*)particles->At(p);
+	}
+	return p;
+}
+
+bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
+		TClonesArray* branchMuon, TClonesArray* branchElectron,
+		TLorentzVector* v_b_0, TLorentzVector* v_b_1,
+		int l_0, int l_1,
+		int hBB, int hTauTau,
+		TLorentzVector* v_gen_higgs_bb, TLorentzVector* v_gen_higgs_tt,
+		TLorentzVector* v_gen_tau_0, TLorentzVector* v_gen_tau_1,
+		TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1,
+		std::vector<std::string> options) {
+	/*Checks whether selected final states are correct*/
+	double jetRadius = 0.5;
+	int swap;
+	//Check b jets_______________________________
+	GenParticle *bJet_0, *bJet_1;
+	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
+	if (!checkDiJet(branchJet, branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius)) {
+		if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
+		return false; //tau-jet selection incorrect
+	}
+	if (swap) {
+		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+	} else {
+		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+	}
+	//___________________________________________
+	//Check taus_________________________________
+	if (debug) std::cout << "Checking taus\n";
+	GenParticle *tau_0, *tau_1;
+	higgs = (GenParticle*)branchParticle->At(hTauTau);
+	if (options[0] == "tau" && options[1] == "tau") {
+		//h->tau_h tau_h_________________________
+		if (!checkDiJet(branchParticle, (Jet*)branchJet->At(l_0)->P4(), (Jet*)branchJet->At(l_1)->P4(), hTauTau, 15, &swap, jetRadius)) {
+			if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
+			return false; //tau-jet selection incorrect
+		}
+		if (swap) {
+			tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+		} else {
+			tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+		}
+		//_______________________________________
+	} else if ((options[0] == "tau" && options[1] != "tau") || (options[0] != "tau" && options[1] == "tau")) {
+		//h->tau_h light-lepton__________________
+		//Load objects___________________________
+		tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+		tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+		GenParticle* lightLepton;
+		Jet* tauJet;
+		for (int i = 0; i < 2; i++) {
+			int l = l_0;
+			if (i == 1) {
+				l = l_1;
+			}
+			if (options[i] == "tau") {
+				tauJet = (Jet*)branchJet->At(l);
+			} else if (options[i] == "muon") {
+				lightLepton = (GenParticle*)((Muon*)branchMuon->At(l))->Particle.GetObject();
+			} else if (options[i] == "electron") {
+				lightLepton = (GenParticle*)((Electron*)branchElectron->At(l))->Particle.GetObject();
+			}
+		}
+		//_______________________________________
+		//Check taus_____________________________
+		int leptonMother = ancestrySearch(lightLepton, tau_0, tau_1, branchParticle);
+		if (leptonMother == -1) {
+			if (debug) std::cout << "MC check fails due to ancestry check\n";
+			return false; //Light lepton did not come from tau decay
+		}
+		GenParticle* tauh;
+		if (leptonMother == 0) {
+			tauh = tau_1;
+			tau_1 = tau_0; //Reassociate 0 to tau and 1 to lepton
+			tau_0 = tauh;
+		} else {
+			tauh = tau_0;
+		}
+		if (tauh->P4().DeltaR(tauJet->P4()) > jetRadius) {
+			if (debug) std::cout << "MC check fails due to tau-jet check\n";
+			return false; //Tau outside selected jet
+		}
+		//_______________________________________
+		//_______________________________________
+	} else {
+		//h->light-lepton light-lepton___________
+		//Load objects___________________________
+		GenParticle* higgs = (GenParticle*)branchParticle->At(hTauTau);
+		tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+		tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+		GenParticle *lightLepton_0, *lightLepton_1;
+		if (options[0] == "muon") {
+			lightLepton_0 = (GenParticle*)((Muon*)branchMuon->At(l_0))->Particle.GetObject();
+		} else if (options[0] == "electron") {
+			lightLepton_0 = (GenParticle*)((Electron*)branchElectron->At(l_0))->Particle.GetObject();
+		}
+		if (options[1] == "muon") {
+			lightLepton_1 = (GenParticle*)((Muon*)branchMuon->At(l_1))->Particle.GetObject();
+		} else if (options[1] == "electron") {
+			lightLepton_1 = (GenParticle*)((Electron*)branchElectron->At(l_1))->Particle.GetObject();
+		}
+		//_______________________________________
+		//Check taus_____________________________
+		int leptonMother_0 = ancestrySearch(lightLepton_0, tau_0, tau_1, branchParticle);
+		if (leptonMother_0 == -1) {
+			if (debug) std::cout << "MC check fails due to ancestry check\n";
+			return false; //Light lepton 0 did not come from tau decay
+		}
+		int leptonMother_1 = ancestrySearch(lightLepton_1, tau_0, tau_1, branchParticle);
+		if (leptonMother_1 == -1) {
+			if (debug) std::cout << "MC check fails due to ancestry check\n";
+			return false; //Light lepton 1 did not come from tau decay
+		}
+		if (leptonMother_0 == leptonMother_1) {
+			if (debug) std::cout << "MC check fails due to both leptons coming from same tau\n";
+			return false; //Leptons both came from same mother (somehow)
+		}
+		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
+		if ((lightLepton_0->PT > lightLepton_1->PT & leptonMother_0 == 1) |
+				(lightLepton_0->PT < lightLepton_1->PT & leptonMother_0 == 0)) {
+			tau_0 = tau_1;
+			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+		}
+		//_______________________________________
+		//_______________________________________
+	}
+	if (debug) std::cout << "Both taus confirmed\n";
+	//___________________________________________
+	if (debug) std::cout << "Event accepted\n";
+	//Get vectors for regression_________________
+	*v_gen_higgs_bb = ((GenParticle*)branchParticle->At(hBB))->P4();
+	*v_gen_higgs_tt = ((GenParticle*)branchParticle->At(hTauTau))->P4();
+	*v_gen_tau_0 = tau_0->P4();
+	*v_gen_tau_1 = tau_1->P4();
+	*v_gen_bJet_0 = bJet_0->P4();
+	*v_gen_bJet_1 = bJet_1->P4();
+	//___________________________________________
+	return true;
+}
+
 int main(int argc, char *argv[]) { //input, output, N events, truth
 	std::map<std::string, std::string> options = getOptions(argc, argv);
 	if (options.size() == 0) {
@@ -542,7 +790,20 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	double sphericityA, spherocityA, aplanarityA, aplanorityA, upsilonA, dShapeA; //Event shapes for all objects
 	double sphericityP, spherocityP, aplanarityP, aplanorityP, upsilonP, dShapeP; //Event shapes for primary objects
 	//___________________________________________
+	//Generator-level variables for regression and cuts
+	double gen_t_0_pT, gen_t_0_eta, gen_t_0_phi, gen_t_0_E; //Tau 0 variables
+	double gen_t_1_pT, gen_t_1_eta, gen_t_1_phi, gen_t_1_E; //Tau 1 variables
+	double gen_b_0_pT, gen_b_0_eta, gen_b_0_phi, gen_b_0_E; //b-jet 0 variables
+	double gen_b_1_pT, gen_b_1_eta, gen_b_1_phi, gen_b_1_E; //b-jet 1 variables
+	double gen_diH_pT, gen_diH_eta, gen_diH_phi, gen_diH_E, gen_diH_mass; //diHiggs variables
+	double gen_h_bb_pT, gen_h_bb_eta, gen_h_bb_phi, gen_h_bb_E; //Higgs->bb variables
+	double gen_h_tt_pT, gen_h_tt_eta, gen_h_tt_phi, gen_h_tt_E; //Higgs->tau tau variables
+	bool gen_mctMatch; //MC truth match
+	double gen_cosThetaStar;
+	//___________________________________________
 	double weight; //Event weight
+	int hBB = -1, hTauTau = -1;
+	bool gen_mctMatch = false;
 	int nElectrons = 0, nMuons = 0;
 	bool eventAccepted = false;
 	TTree* e_tau_b_b = new TTree("e_tau_b_b", "e #tau b #bar{b}");
@@ -607,6 +868,37 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	e_tau_b_b->Branch("aplanorityP", &aplanorityP);
 	e_tau_b_b->Branch("upsilonP", &upsilonP);
 	e_tau_b_b->Branch("dShapeP", &dShapeP);
+	e_tau_b_b->Branch("gen_t_0_pT", &gen_t_0_pT);
+	e_tau_b_b->Branch("gen_t_0_eta", &gen_t_0_eta);
+	e_tau_b_b->Branch("gen_t_0_phi", &gen_t_0_phi);
+	e_tau_b_b->Branch("gen_t_0_E", &gen_t_0_E);
+	e_tau_b_b->Branch("gen_t_1_pT", &gen_t_1_pT);
+	e_tau_b_b->Branch("gen_t_1_eta", &gen_t_1_eta);
+	e_tau_b_b->Branch("gen_t_1_phi", &gen_t_1_phi);
+	e_tau_b_b->Branch("gen_t_1_E", &gen_t_1_E);
+	e_tau_b_b->Branch("gen_b_0_pT", &gen_b_0_pT);
+	e_tau_b_b->Branch("gen_b_0_eta", &gen_b_0_eta);
+	e_tau_b_b->Branch("gen_b_0_phi", &gen_b_0_phi);
+	e_tau_b_b->Branch("gen_b_0_E", &gen_b_0_E);
+	e_tau_b_b->Branch("gen_b_1_pT", &gen_b_1_pT);
+	e_tau_b_b->Branch("gen_b_1_eta", &gen_b_1_eta);
+	e_tau_b_b->Branch("gen_b_1_phi", &gen_b_1_phi);
+	e_tau_b_b->Branch("gen_b_1_E", &gen_b_1_E);
+	e_tau_b_b->Branch("gen_diH_pT", &gen_diH_pT);
+	e_tau_b_b->Branch("gen_diH_eta", &gen_diH_eta);
+	e_tau_b_b->Branch("gen_diH_phi", &gen_diH_phi);
+	e_tau_b_b->Branch("gen_diH_E", &gen_diH_E);
+	e_tau_b_b->Branch("gen_diH_mass", &gen_diH_mass);
+	e_tau_b_b->Branch("gen_h_bb_pT", &gen_h_bb_pT);
+	e_tau_b_b->Branch("gen_h_bb_eta", &gen_h_bb_eta);
+	e_tau_b_b->Branch("gen_h_bb_phi", &gen_h_bb_phi);
+	e_tau_b_b->Branch("gen_h_bb_E", &gen_h_bb_E);
+	e_tau_b_b->Branch("gen_h_tt_pT", &gen_h_tt_pT);
+	e_tau_b_b->Branch("gen_h_tt_eta", &gen_h_tt_eta);
+	e_tau_b_b->Branch("gen_h_tt_phi", &gen_h_tt_phi);
+	e_tau_b_b->Branch("gen_h_tt_E", &gen_h_tt_E);
+	e_tau_b_b->Branch("gen_mctMatch", &gen_mctMatch);
+	e_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
 	e_tau_b_b->Branch("gen_weight", &weight);
 	TTree* mu_tau_b_b = new TTree("mu_tau_b_b", "#mu #tau_{h} b #bar{b}");
 	mu_tau_b_b->Branch("t_0_pT", &t_0_pT);
@@ -670,6 +962,37 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	mu_tau_b_b->Branch("aplanorityP", &aplanorityP);
 	mu_tau_b_b->Branch("upsilonP", &upsilonP);
 	mu_tau_b_b->Branch("dShapeP", &dShapeP);
+	mu_tau_b_b->Branch("gen_t_0_pT", &gen_t_0_pT);
+	mu_tau_b_b->Branch("gen_t_0_eta", &gen_t_0_eta);
+	mu_tau_b_b->Branch("gen_t_0_phi", &gen_t_0_phi);
+	mu_tau_b_b->Branch("gen_t_0_E", &gen_t_0_E);
+	mu_tau_b_b->Branch("gen_t_1_pT", &gen_t_1_pT);
+	mu_tau_b_b->Branch("gen_t_1_eta", &gen_t_1_eta);
+	mu_tau_b_b->Branch("gen_t_1_phi", &gen_t_1_phi);
+	mu_tau_b_b->Branch("gen_t_1_E", &gen_t_1_E);
+	mu_tau_b_b->Branch("gen_b_0_pT", &gen_b_0_pT);
+	mu_tau_b_b->Branch("gen_b_0_eta", &gen_b_0_eta);
+	mu_tau_b_b->Branch("gen_b_0_phi", &gen_b_0_phi);
+	mu_tau_b_b->Branch("gen_b_0_E", &gen_b_0_E);
+	mu_tau_b_b->Branch("gen_b_1_pT", &gen_b_1_pT);
+	mu_tau_b_b->Branch("gen_b_1_eta", &gen_b_1_eta);
+	mu_tau_b_b->Branch("gen_b_1_phi", &gen_b_1_phi);
+	mu_tau_b_b->Branch("gen_b_1_E", &gen_b_1_E);
+	mu_tau_b_b->Branch("gen_diH_pT", &gen_diH_pT);
+	mu_tau_b_b->Branch("gen_diH_eta", &gen_diH_eta);
+	mu_tau_b_b->Branch("gen_diH_phi", &gen_diH_phi);
+	mu_tau_b_b->Branch("gen_diH_E", &gen_diH_E);
+	mu_tau_b_b->Branch("gen_diH_mass", &gen_diH_mass);
+	mu_tau_b_b->Branch("gen_h_bb_pT", &gen_h_bb_pT);
+	mu_tau_b_b->Branch("gen_h_bb_eta", &gen_h_bb_eta);
+	mu_tau_b_b->Branch("gen_h_bb_phi", &gen_h_bb_phi);
+	mu_tau_b_b->Branch("gen_h_bb_E", &gen_h_bb_E);
+	mu_tau_b_b->Branch("gen_h_tt_pT", &gen_h_tt_pT);
+	mu_tau_b_b->Branch("gen_h_tt_eta", &gen_h_tt_eta);
+	mu_tau_b_b->Branch("gen_h_tt_phi", &gen_h_tt_phi);
+	mu_tau_b_b->Branch("gen_h_tt_E", &gen_h_tt_E);
+	mu_tau_b_b->Branch("gen_mctMatch", &gen_mctMatch);
+	mu_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
 	mu_tau_b_b->Branch("gen_weight", &weight);
 	TTree* tau_tau_b_b = new TTree("tau_tau_b_b", "#tau_{h} #tau_{h} b #bar{b}");
 	tau_tau_b_b->Branch("t_0_pT", &t_0_pT);
@@ -733,6 +1056,37 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	tau_tau_b_b->Branch("aplanorityP", &aplanorityP);
 	tau_tau_b_b->Branch("upsilonP", &upsilonP);
 	tau_tau_b_b->Branch("dShapeP", &dShapeP);
+	tau_tau_b_b->Branch("gen_t_0_pT", &gen_t_0_pT);
+	tau_tau_b_b->Branch("gen_t_0_eta", &gen_t_0_eta);
+	tau_tau_b_b->Branch("gen_t_0_phi", &gen_t_0_phi);
+	tau_tau_b_b->Branch("gen_t_0_E", &gen_t_0_E);
+	tau_tau_b_b->Branch("gen_t_1_pT", &gen_t_1_pT);
+	tau_tau_b_b->Branch("gen_t_1_eta", &gen_t_1_eta);
+	tau_tau_b_b->Branch("gen_t_1_phi", &gen_t_1_phi);
+	tau_tau_b_b->Branch("gen_t_1_E", &gen_t_1_E);
+	tau_tau_b_b->Branch("gen_b_0_pT", &gen_b_0_pT);
+	tau_tau_b_b->Branch("gen_b_0_eta", &gen_b_0_eta);
+	tau_tau_b_b->Branch("gen_b_0_phi", &gen_b_0_phi);
+	tau_tau_b_b->Branch("gen_b_0_E", &gen_b_0_E);
+	tau_tau_b_b->Branch("gen_b_1_pT", &gen_b_1_pT);
+	tau_tau_b_b->Branch("gen_b_1_eta", &gen_b_1_eta);
+	tau_tau_b_b->Branch("gen_b_1_phi", &gen_b_1_phi);
+	tau_tau_b_b->Branch("gen_b_1_E", &gen_b_1_E);
+	tau_tau_b_b->Branch("gen_diH_pT", &gen_diH_pT);
+	tau_tau_b_b->Branch("gen_diH_eta", &gen_diH_eta);
+	tau_tau_b_b->Branch("gen_diH_phi", &gen_diH_phi);
+	tau_tau_b_b->Branch("gen_diH_E", &gen_diH_E);
+	tau_tau_b_b->Branch("gen_diH_mass", &gen_diH_mass);
+	tau_tau_b_b->Branch("gen_h_bb_pT", &gen_h_bb_pT);
+	tau_tau_b_b->Branch("gen_h_bb_eta", &gen_h_bb_eta);
+	tau_tau_b_b->Branch("gen_h_bb_phi", &gen_h_bb_phi);
+	tau_tau_b_b->Branch("gen_h_bb_E", &gen_h_bb_E);
+	tau_tau_b_b->Branch("gen_h_tt_pT", &gen_h_tt_pT);
+	tau_tau_b_b->Branch("gen_h_tt_eta", &gen_h_tt_eta);
+	tau_tau_b_b->Branch("gen_h_tt_phi", &gen_h_tt_phi);
+	tau_tau_b_b->Branch("gen_h_tt_E", &gen_h_tt_E);
+	tau_tau_b_b->Branch("gen_mctMatch", &gen_mctMatch);
+	tau_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
 	tau_tau_b_b->Branch("gen_weight", &weight);
 	std::cout << "Variables initialised\n";
 	//___________________________________________
@@ -783,6 +1137,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	}
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");	
 	TClonesArray *branchWeights = treeReader->UseBranch("Weight");
+	TClonesArray *branchParticle  = treeReader->UseBranch("Particle");
 	std::cout << "Data loaded\n";
 	//_______________________________________
 	//Loop through events____________________
@@ -791,6 +1146,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	std::vector<int> taus, bJets, electrons, muons;
 	bool addMuon, addElectron;
 	TLorentzVector v_tau_0, v_tau_1, v_bJet_0, v_bJet_1, v_higgs_tt, v_higgs_bb, v_diHiggs;
+	
 	Jet* tmpJet;
 	Electron* tmpElectron;
 	Muon* tmpMuon;
@@ -812,6 +1168,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 		} else {
 			tauTags = tagTaus(branchJet); //get new tau tags
 		}
+		hBB = -1;
+		hTauTau = -1;
+		gen_mctMatch = false;
+		TLorentzVector v_gen_higgs_bb, v_gen_higgs_tt, v_gen_diHiggs, v_gen_tau_0, v_gen_tau_1, v_gen_bJet_0, v_gen_bJet_1;
 		//Check for mu tau b b finalstates___
 		h_mu_tau_b_b_cutFlow->Fill("All", 1);
 		finalstateSet("mu_tau_b_b");
@@ -884,6 +1244,49 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							if (debug) std::cout << "Accepted mu_tau_b_b event\n";
 							mPT_pT = tmpMPT->MET;
 							mPT_phi = tmpMPT->Phi;
+							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
+								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
+								gen_mctMatch = getGenSystem(branchParticle, branchJet,
+															branchMuon, branchElectron,
+															TLorentzVector* v_b_0, TLorentzVector* v_b_1,
+															int taus[0], int muons[0],
+															int hBB, int hTauTau,
+															v_gen_higgs_bb,  v_gen_higgs_tt,
+															v_gen_tau_0, v_gen_tau_1,
+															v_gen_bJet_0, v_gen_bJet_1,
+															{"tau", "muon"});
+							}
+							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
+							gen_t_0_pT = v_gen_tau_0.Pt();
+							gen_t_0_eta = v_gen_tau_0.Eta();
+							gen_t_0_phi = v_gen_tau_0.Phi();
+							gen_t_0_E = v_gen_tau_0.E();
+							gen_t_1_pT = v_gen_tau_1.Pt();
+							gen_t_1_eta = v_gen_tau_1.Eta();
+							gen_t_1_phi = v_gen_tau_1.Phi();
+							gen_t_1_E = v_gen_tau_1.E();
+							gen_b_0_pT = v_gen_bJet_0.Pt();
+							gen_b_0_eta = v_gen_bJet_0.Eta();
+							gen_b_0_phi = v_gen_bJet_0.Phi();
+							gen_b_0_E = v_gen_bJet_0.E();
+							gen_b_1_pT = v_gen_bJet_1.Pt();
+							gen_b_1_eta = v_gen_bJet_1.Eta();
+							gen_b_1_phi = v_gen_bJet_1.Phi();
+							gen_b_1_E = v_gen_bJet_1.E();
+							gen_diH_pT = v_gen_diHiggs.Pt();
+							gen_diH_eta = v_gen_diHiggs.Eta();
+							gen_diH_phi = v_gen_diHiggs.Phi();
+							gen_diH_E = v_gen_diHiggs.E();
+							gen_diH_mass = v_gen_diHiggs.M();
+							gen_h_bb_pT = v_gen_higgs_bb.Pt();
+							gen_h_bb_eta = v_gen_higgs_bb.Eta();
+							gen_h_bb_phi = v_gen_higgs_bb.Phi();
+							gen_h_bb_E = v_gen_higgs_bb.E();
+							gen_h_tt_pT = v_gen_higgs_tt.Pt();
+							gen_h_tt_eta = v_gen_higgs_tt.Eta();
+							gen_h_tt_phi = v_gen_higgs_tt.Phi();
+							gen_h_tt_E = v_gen_higgs_tt.E();
+							gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
 							t_0_pT = v_tau_0.Pt();
 							t_0_eta = v_tau_0.Eta();
 							t_0_phi = v_tau_0.Phi();
@@ -1013,6 +1416,49 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
 							v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 							if (debug) std::cout << "Accepted e_tau_b_b event\n";
+							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
+								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
+								gen_mctMatch = getGenSystem(branchParticle, branchJet,
+															branchMuon, branchElectron,
+															TLorentzVector* v_b_0, TLorentzVector* v_b_1,
+															int taus[0], int electrons[0],
+															int hBB, int hTauTau,
+															v_gen_higgs_bb,  v_gen_higgs_tt,
+															v_gen_tau_0, v_gen_tau_1,
+															v_gen_bJet_0, v_gen_bJet_1,
+															{"tau", "electron"});
+							}
+							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
+							gen_t_0_pT = v_gen_tau_0.Pt();
+							gen_t_0_eta = v_gen_tau_0.Eta();
+							gen_t_0_phi = v_gen_tau_0.Phi();
+							gen_t_0_E = v_gen_tau_0.E();
+							gen_t_1_pT = v_gen_tau_1.Pt();
+							gen_t_1_eta = v_gen_tau_1.Eta();
+							gen_t_1_phi = v_gen_tau_1.Phi();
+							gen_t_1_E = v_gen_tau_1.E();
+							gen_b_0_pT = v_gen_bJet_0.Pt();
+							gen_b_0_eta = v_gen_bJet_0.Eta();
+							gen_b_0_phi = v_gen_bJet_0.Phi();
+							gen_b_0_E = v_gen_bJet_0.E();
+							gen_b_1_pT = v_gen_bJet_1.Pt();
+							gen_b_1_eta = v_gen_bJet_1.Eta();
+							gen_b_1_phi = v_gen_bJet_1.Phi();
+							gen_b_1_E = v_gen_bJet_1.E();
+							gen_diH_pT = v_gen_diHiggs.Pt();
+							gen_diH_eta = v_gen_diHiggs.Eta();
+							gen_diH_phi = v_gen_diHiggs.Phi();
+							gen_diH_E = v_gen_diHiggs.E();
+							gen_diH_mass = v_gen_diHiggs.M();
+							gen_h_bb_pT = v_gen_higgs_bb.Pt();
+							gen_h_bb_eta = v_gen_higgs_bb.Eta();
+							gen_h_bb_phi = v_gen_higgs_bb.Phi();
+							gen_h_bb_E = v_gen_higgs_bb.E();
+							gen_h_tt_pT = v_gen_higgs_tt.Pt();
+							gen_h_tt_eta = v_gen_higgs_tt.Eta();
+							gen_h_tt_phi = v_gen_higgs_tt.Phi();
+							gen_h_tt_E = v_gen_higgs_tt.E();
+							gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
 							mPT_pT = tmpMPT->MET;
 							mPT_phi = tmpMPT->Phi;
 							t_0_pT = v_tau_0.Pt();
@@ -1138,6 +1584,49 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
 								v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 								if (debug) std::cout << "Accepted tau_tau_b_b event\n";
+								if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
+								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
+									gen_mctMatch = getGenSystem(branchParticle, branchJet,
+																branchMuon, branchElectron,
+																TLorentzVector* v_b_0, TLorentzVector* v_b_1,
+																int tau_0, int tau_1,
+																int hBB, int hTauTau,
+																v_gen_higgs_bb,  v_gen_higgs_tt,
+																v_gen_tau_0, v_gen_tau_1,
+																v_gen_bJet_0, v_gen_bJet_1,
+																{"tau", "tau"});
+								}
+								v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
+								gen_t_0_pT = v_gen_tau_0.Pt();
+								gen_t_0_eta = v_gen_tau_0.Eta();
+								gen_t_0_phi = v_gen_tau_0.Phi();
+								gen_t_0_E = v_gen_tau_0.E();
+								gen_t_1_pT = v_gen_tau_1.Pt();
+								gen_t_1_eta = v_gen_tau_1.Eta();
+								gen_t_1_phi = v_gen_tau_1.Phi();
+								gen_t_1_E = v_gen_tau_1.E();
+								gen_b_0_pT = v_gen_bJet_0.Pt();
+								gen_b_0_eta = v_gen_bJet_0.Eta();
+								gen_b_0_phi = v_gen_bJet_0.Phi();
+								gen_b_0_E = v_gen_bJet_0.E();
+								gen_b_1_pT = v_gen_bJet_1.Pt();
+								gen_b_1_eta = v_gen_bJet_1.Eta();
+								gen_b_1_phi = v_gen_bJet_1.Phi();
+								gen_b_1_E = v_gen_bJet_1.E();
+								gen_diH_pT = v_gen_diHiggs.Pt();
+								gen_diH_eta = v_gen_diHiggs.Eta();
+								gen_diH_phi = v_gen_diHiggs.Phi();
+								gen_diH_E = v_gen_diHiggs.E();
+								gen_diH_mass = v_gen_diHiggs.M();
+								gen_h_bb_pT = v_gen_higgs_bb.Pt();
+								gen_h_bb_eta = v_gen_higgs_bb.Eta();
+								gen_h_bb_phi = v_gen_higgs_bb.Phi();
+								gen_h_bb_E = v_gen_higgs_bb.E();
+								gen_h_tt_pT = v_gen_higgs_tt.Pt();
+								gen_h_tt_eta = v_gen_higgs_tt.Eta();
+								gen_h_tt_phi = v_gen_higgs_tt.Phi();
+								gen_h_tt_E = v_gen_higgs_tt.E();
+								gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
 								mPT_pT = tmpMPT->MET;
 								mPT_phi = tmpMPT->Phi;
 								t_0_pT = v_tau_0.Pt();
