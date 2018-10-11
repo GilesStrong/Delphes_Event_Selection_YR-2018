@@ -548,6 +548,7 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 			if (nHiggs >= 2) break; //Both Higgs found
 		}
 	}
+	if (debug) std::cout << "Both Higgs not found rejectig event\n";
 	return false; //Both h->bb and h->tautau not found
 }
 
@@ -623,6 +624,8 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	/*Checks whether selected final states are correct*/
 	double jetRadius = 0.5;
 	int swap;
+	if (debug) std::cout << "Higgs to bb at " << hBB << " Higgs to tau tau at " << hTauTau << "\n";
+	if (debug) std::cout << "tau 0 at " << l_0 << " tau 1 at " << l_1 << "\n";
 	//Check b jets_______________________________
 	GenParticle *bJet_0, *bJet_1;
 	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
