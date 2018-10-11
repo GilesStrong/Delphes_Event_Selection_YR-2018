@@ -1247,7 +1247,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															&v_bJet_0, &v_bJet_1,
+															*v_bJet_0, *v_bJet_1,
 															taus[0], muons[0],
 															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
@@ -1419,7 +1419,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															&v_bJet_0, &v_bJet_1,
+															*v_bJet_0, *v_bJet_1,
 															taus[0], electrons[0],
 															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
@@ -1587,7 +1587,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
-																&v_bJet_0, &v_bJet_1,
+																*v_bJet_0, *v_bJet_1,
 																tau_0, tau_1,
 																hBB, hTauTau,
 																v_gen_higgs_bb,  v_gen_higgs_tt,
