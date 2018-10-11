@@ -554,7 +554,7 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 bool checkDiJet(TClonesArray* particles,
 	TLorentzVector* v_0, TLorentzVector* v_1,
 	int mother, int pID,
-	int* swap, TH1D* dRPlot, double R) {
+	int* swap, double R) {
 	/*Checks whether the particles are within their nearest jet*/
 	//Associate particles to closest found jet___
 	int p_0 = -1, p_1 = -1;
@@ -730,7 +730,6 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (debug) std::cout << "MC check fails due to both leptons coming from same tau\n";
 			return false; //Leptons both came from same mother (somehow)
 		}
-		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
 		if ((lightLepton_0->PT > lightLepton_1->PT & leptonMother_0 == 1) |
 				(lightLepton_0->PT < lightLepton_1->PT & leptonMother_0 == 0)) {
 			tau_0 = tau_1;
@@ -804,7 +803,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	//___________________________________________
 	double weight; //Event weight
 	int hBB = -1, hTauTau = -1;
-	bool gen_mctMatch = false;
 	int nElectrons = 0, nMuons = 0;
 	bool eventAccepted = false;
 	TTree* e_tau_b_b = new TTree("e_tau_b_b", "e #tau b #bar{b}");
@@ -1249,9 +1247,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															TLorentzVector* v_b_0, TLorentzVector* v_b_1,
-															int taus[0], int muons[0],
-															int hBB, int hTauTau,
+															v_b_0, v_b_1,
+															taus[0], muons[0],
+															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
 															v_gen_tau_0, v_gen_tau_1,
 															v_gen_bJet_0, v_gen_bJet_1,
@@ -1421,9 +1419,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															TLorentzVector* v_b_0, TLorentzVector* v_b_1,
-															int taus[0], int electrons[0],
-															int hBB, int hTauTau,
+															v_b_0, v_b_1,
+															taus[0], electrons[0],
+															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
 															v_gen_tau_0, v_gen_tau_1,
 															v_gen_bJet_0, v_gen_bJet_1,
@@ -1589,9 +1587,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
-																TLorentzVector* v_b_0, TLorentzVector* v_b_1,
-																int tau_0, int tau_1,
-																int hBB, int hTauTau,
+																v_b_0, v_b_1,
+																tau_0, tau_1,
+																hBB, hTauTau,
 																v_gen_higgs_bb,  v_gen_higgs_tt,
 																v_gen_tau_0, v_gen_tau_1,
 																v_gen_bJet_0, v_gen_bJet_1,
