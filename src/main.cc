@@ -644,7 +644,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	higgs = (GenParticle*)branchParticle->At(hTauTau);
 	if (options[0] == "tau" && options[1] == "tau") {
 		//h->tau_h tau_h_________________________
-		if (!checkDiJet(branchParticle, ((Jet*)branchJet->At(l_0))->P4(), ((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius)) {
+		if (!checkDiJet(branchParticle, &((Jet*)branchJet->At(l_0))->P4(), &((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius)) {
 			if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
 			return false; //tau-jet selection incorrect
 		}
@@ -1247,7 +1247,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															v_b_0, v_b_1,
+															v_bJet_0, v_bJet_1,
 															taus[0], muons[0],
 															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
@@ -1419,7 +1419,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															v_b_0, v_b_1,
+															v_bJet_0, v_bJet_1,
 															taus[0], electrons[0],
 															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
@@ -1587,7 +1587,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
-																v_b_0, v_b_1,
+																v_bJet_0, v_bJet_1,
 																tau_0, tau_1,
 																hBB, hTauTau,
 																v_gen_higgs_bb,  v_gen_higgs_tt,
