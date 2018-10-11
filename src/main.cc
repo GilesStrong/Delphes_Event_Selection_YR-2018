@@ -663,12 +663,14 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
 			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
 		}
+		if (debug) std::cout << "gen tau 0" << tau_0 << " gen tau 1 " << tau_1 << "\n";
 		//_______________________________________
 	} else if ((options[0] == "tau" && options[1] != "tau") || (options[0] != "tau" && options[1] == "tau")) {
 		//h->tau_h light-lepton__________________
 		//Load objects___________________________
 		tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
 		tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+		if (debug) std::cout << "gen tau 0" << tau_0 << " gen tau 1 " << tau_1 << "\n";
 		GenParticle* lightLepton;
 		Jet* tauJet;
 		for (int i = 0; i < 2; i++) {
@@ -676,6 +678,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (i == 1) {
 				l = l_1;
 			}
+			if (debug) std::cout << "i, l: " << i << ", " << l << "\n";
 			if (options[i] == "tau") {
 				tauJet = (Jet*)branchJet->At(l);
 			} else if (options[i] == "muon") {
@@ -691,6 +694,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (debug) std::cout << "MC check fails due to ancestry check\n";
 			return false; //Light lepton did not come from tau decay
 		}
+		if (debug) std::cout << "leptonMother" << leptonMother << "\n";
 		GenParticle* tauh;
 		if (leptonMother == 0) {
 			tauh = tau_1;
