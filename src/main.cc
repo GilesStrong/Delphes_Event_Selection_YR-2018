@@ -1250,9 +1250,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 															v_bJet_0, v_bJet_1,
 															taus[0], muons[0],
 															hBB, hTauTau,
-															v_gen_higgs_bb,  v_gen_higgs_tt,
-															v_gen_tau_0, v_gen_tau_1,
-															v_gen_bJet_0, v_gen_bJet_1,
+															&v_gen_higgs_bb,  &v_gen_higgs_tt,
+															&v_gen_tau_0, &v_gen_tau_1,
+															&v_gen_bJet_0, &v_gen_bJet_1,
 															{"tau", "muon"});
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
@@ -1422,9 +1422,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 															v_bJet_0, v_bJet_1,
 															taus[0], electrons[0],
 															hBB, hTauTau,
-															v_gen_higgs_bb,  v_gen_higgs_tt,
-															v_gen_tau_0, v_gen_tau_1,
-															v_gen_bJet_0, v_gen_bJet_1,
+															&v_gen_higgs_bb,  &v_gen_higgs_tt,
+															&v_gen_tau_0, &v_gen_tau_1,
+															&v_gen_bJet_0, &v_gen_bJet_1,
 															{"tau", "electron"});
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
@@ -1590,9 +1590,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 																v_bJet_0, v_bJet_1,
 																tau_0, tau_1,
 																hBB, hTauTau,
-																v_gen_higgs_bb,  v_gen_higgs_tt,
-																v_gen_tau_0, v_gen_tau_1,
-																v_gen_bJet_0, v_gen_bJet_1,
+																&v_gen_higgs_bb,  &v_gen_higgs_tt,
+																&v_gen_tau_0, &v_gen_tau_1,
+																&v_gen_bJet_0, &v_gen_bJet_1,
 																{"tau", "tau"});
 								}
 								v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
