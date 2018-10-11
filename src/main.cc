@@ -590,7 +590,7 @@ int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* paren
 	int ancestor = -1;
 	if (debug) std::cout << "size: " << particles->GetEntries() << ", mothers: " << child->M1  << " " << child->M2 << "\n";
 	GenParticle* mother;
-	if (child->M1 > 0) { //Check first mother
+	if (child->M1 > 0 && child->M1 < particles->GetEntries()) { //Check first mother
 		mother = (GenParticle*)particles->At(child->M1);
 		if (mother->GetUniqueID() == parent_0->GetUniqueID()) {
 			return 0;
@@ -600,7 +600,7 @@ int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* paren
 			ancestor = ancestrySearch(mother, parent_0, parent_1, particles); //Recursive search
 		}
 	}
-	if (ancestor == -1 && child->M2 > 0) { //Check second mother
+	if (ancestor == -1 && child->M2 > 0 && child->M2 < particles->GetEntries()) { //Check second mother
 		mother = (GenParticle*)particles->At(child->M2);
 		if (mother->GetUniqueID() == parent_0->GetUniqueID()) {
 			return 0;
