@@ -689,6 +689,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		}
 		//_______________________________________
 		//Check taus_____________________________
+		if (debug) std::cout << "Beginning ancestrySearch\n";
 		int leptonMother = ancestrySearch(lightLepton, tau_0, tau_1, branchParticle);
 		if (leptonMother == -1) {
 			if (debug) std::cout << "MC check fails due to ancestry check\n";
