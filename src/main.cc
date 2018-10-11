@@ -522,7 +522,7 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 	bool hBBFound = false, hTauTauFound = false;
 	int nHiggs = 0;
 	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
-		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25 && ((GenParticle*)branchParticle->At(p))->PID == 22) { //Particle is Higgs
+		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25) { //Particle is Higgs
 			if (((GenParticle*)branchParticle->At(p))->D1 >= 0 && ((GenParticle*)branchParticle->At(p))->D2 >= 0) { //Daughters exists
 				if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
 						((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
