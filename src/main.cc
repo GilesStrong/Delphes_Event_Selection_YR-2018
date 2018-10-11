@@ -613,7 +613,7 @@ int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* paren
 
 bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		TClonesArray* branchMuon, TClonesArray* branchElectron,
-		TLorentzVector* v_b_0, TLorentzVector* v_b_1,
+		TLorentzVector v_b_0, TLorentzVector v_b_1,
 		int l_0, int l_1,
 		int hBB, int hTauTau,
 		TLorentzVector* v_gen_higgs_bb, TLorentzVector* v_gen_higgs_tt,
@@ -626,7 +626,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	//Check b jets_______________________________
 	GenParticle *bJet_0, *bJet_1;
 	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
-	if (!checkDiJet(branchParticle, *v_b_0, *v_b_1, hBB, 5, &swap, jetRadius)) {
+	if (!checkDiJet(branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius)) {
 		if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
 		return false; //tau-jet selection incorrect
 	}
@@ -1247,7 +1247,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															*v_bJet_0, *v_bJet_1,
+															v_bJet_0, v_bJet_1,
 															taus[0], muons[0],
 															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
@@ -1419,7 +1419,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 								gen_mctMatch = getGenSystem(branchParticle, branchJet,
 															branchMuon, branchElectron,
-															*v_bJet_0, *v_bJet_1,
+															v_bJet_0, v_bJet_1,
 															taus[0], electrons[0],
 															hBB, hTauTau,
 															v_gen_higgs_bb,  v_gen_higgs_tt,
@@ -1587,7 +1587,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (!correctDecayChannel(branchParticle, &hBB, &hTauTau)) continue; //Checks if event is h->bbtautau
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
-																*v_bJet_0, *v_bJet_1,
+																v_bJet_0, v_bJet_1,
 																tau_0, tau_1,
 																hBB, hTauTau,
 																v_gen_higgs_bb,  v_gen_higgs_tt,
