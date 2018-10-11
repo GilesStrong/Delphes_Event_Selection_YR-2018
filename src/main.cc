@@ -626,6 +626,10 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	int swap;
 	if (debug) std::cout << "Higgs to bb at " << hBB << " Higgs to tau tau at " << hTauTau << "\n";
 	if (debug) std::cout << "tau 0 at " << l_0 << " tau 1 at " << l_1 << "\n";
+	if (debug) std::cout << "sizes " << branchParticle->GetEntries() << " " << 
+										branchJet->GetEntries() << " " <<
+										branchMuon->GetEntries() << " " <<
+										branchElectron->GetEntries() << "\n";
 	//Check b jets_______________________________
 	GenParticle *bJet_0, *bJet_1;
 	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
