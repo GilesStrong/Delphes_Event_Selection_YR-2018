@@ -645,6 +645,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	if (debug) std::cout << "Checking taus\n";
 	GenParticle *tau_0, *tau_1;
 	higgs = (GenParticle*)branchParticle->At(hTauTau);
+	if (debug) std::cout << "Higgs loaded\n";
 	if (options[0] == "tau" && options[1] == "tau") {
 		//h->tau_h tau_h_________________________
 		if (!checkDiJet(branchParticle, ((Jet*)branchJet->At(l_0))->P4(), ((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius)) {
