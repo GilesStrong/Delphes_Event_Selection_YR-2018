@@ -504,6 +504,19 @@ void getPrimaryEventShapes(TLorentzVector v_tau_0, TLorentzVector v_tau_1, TLore
 	//___________________________________________
 }
 
+
+int moveToEnd(int p, TClonesArray* particles) {
+	/*Selects particle at end of 'decay' chain in event record*/
+	return p;
+	GenParticle* mother = (GenParticle*)particles->At(p);
+	while (((GenParticle*)particles->At(mother->D1))->PID == mother->PID &&
+			((GenParticle*)particles->At(mother->D2))->PID == mother->PID) {
+		p = mother->D1;
+		mother = (GenParticle*)particles->At(p);
+	}
+	return p;
+}
+
 bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauTau=NULL) {
 	/*Make sure event is hh->bbtautau, and point hbb and htautau to the Higgs*/
 	bool hBBFound = false, hTauTauFound = false;
@@ -596,18 +609,6 @@ int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* paren
 		}
 	}
 	return ancestor;
-}
-
-int moveToEnd(int p, TClonesArray* particles) {
-	/*Selects particle at end of 'decay' chain in event record*/
-	return p;
-	GenParticle* mother = (GenParticle*)particles->At(p);
-	while (((GenParticle*)particles->At(mother->D1))->PID == mother->PID &&
-			((GenParticle*)particles->At(mother->D2))->PID == mother->PID) {
-		p = mother->D1;
-		mother = (GenParticle*)particles->At(p);
-	}
-	return p;
 }
 
 bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
