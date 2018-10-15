@@ -1556,16 +1556,16 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 				100*cEvent/nEvents << "%\n";
 		h_datasetSizes->Fill("All", 1);
 		eventAccepted = false;
-		if (options["-i"].find("13Te") != std::string::npos) {
-			tauTags = tagTaus_old(branchJet);
-		} else {
-			tauTags = tagTaus(branchJet); //get new tau tags
-		}
 		hBB = -1;
 		hTauTau = -1;
 		gen_mctMatch = false;
 		if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal
 			if (!correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) continue;
+		}
+		if (options["-i"].find("13Te") != std::string::npos) {
+			tauTags = tagTaus_old(branchJet);
+		} else {
+			tauTags = tagTaus(branchJet); //get new tau tags
 		}
 		TLorentzVector v_gen_higgs_bb, v_gen_higgs_tt, v_gen_diHiggs, v_gen_tau_0, v_gen_tau_1, v_gen_bJet_0, v_gen_bJet_1;
 		//Check for mu tau b b finalstates___
