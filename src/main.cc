@@ -529,7 +529,7 @@ bool correctDecayChannel(std::string input, Long64_t cEvent,
 	int nHiggs = 0;
 	if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau check", 1);
 	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
-		if (((GenParticle*)branchParticle->At(p))->PID == 25 && ((GenParticle*)branchParticle->At(p))->Status == 22) { //Particle is Higgs
+		if (((GenParticle*)branchParticle->At(p))->PID == 25) { // && ((GenParticle*)branchParticle->At(p))->Status == 22) { //Particle is Higgs
 			if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
 				((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
 				nHiggs++;
