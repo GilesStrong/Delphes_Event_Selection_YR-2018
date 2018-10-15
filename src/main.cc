@@ -1564,7 +1564,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 		hBB = -1;
 		hTauTau = -1;
 		gen_mctMatch = false;
-		if (!correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) continue;
 		TLorentzVector v_gen_higgs_bb, v_gen_higgs_tt, v_gen_diHiggs, v_gen_tau_0, v_gen_tau_1, v_gen_bJet_0, v_gen_bJet_1;
 		//Check for mu tau b b finalstates___
 		h_mu_tau_b_b_cutFlow->Fill("All", 1);
