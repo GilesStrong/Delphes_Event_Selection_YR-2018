@@ -530,29 +530,32 @@ bool correctDecayChannel(std::string input, Long64_t cEvent,
 	if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau check", 1);
 	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
 		if (((GenParticle*)branchParticle->At(p))->PID == 25 && ((GenParticle*)branchParticle->At(p))->Status == 22) { //Particle is Higgs
-			nHiggs++;
-			if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID));
-			if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID));
-			if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 5
-					&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 5) { //Daughters are b quarks
-				hBBFound = true;
-				if (hBB != NULL) *hBB = p; //Point to Higgs
-				if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
-					if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
-					chain->Delete();
-					delete treeReader;
-					return true;
+			if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
+				((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
+				nHiggs++;
+				if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID));
+				if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID));
+				if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 5
+						&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 5) { //Daughters are b quarks
+					hBBFound = true;
+					if (hBB != NULL) *hBB = p; //Point to Higgs
+					if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+						if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
+						chain->Delete();
+						delete treeReader;
+						return true;
+					}
 				}
-			}
-			if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 15
-					&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 15) { //Daughters are taus
-				hTauTauFound = true;
-				if (hTauTau != NULL) *hTauTau = p; //Point to Higgs
-				if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
-					if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
-					chain->Delete();
-					delete treeReader;
-					return true;
+				if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 15
+						&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 15) { //Daughters are taus
+					hTauTauFound = true;
+					if (hTauTau != NULL) *hTauTau = p; //Point to Higgs
+					if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+						if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
+						chain->Delete();
+						delete treeReader;
+						return true;
+					}
 				}
 			}
 			if (nHiggs >= 2) break; //Both Higgs found
