@@ -517,13 +517,19 @@ int moveToEnd(int p, TClonesArray* particles) {
 	return p;
 }
 
-bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauTau=NULL, std::map<std::string, TH1D*>* plots=NULL) {
+bool correctDecayChannel(std::string input, Long64_t cEvent,
+		std::map<std::string, TH1D*>* plots=NULL, int* hBB=NULL, int* hTauTau=NULL) {
 	/*Make sure event is hh->bbtautau, and point hbb and htautau to the Higgs*/
+	TChain *chain = new TChain("Delphes");
+	chain->Add(input.c_str());
+	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
+	TClonesArray *branchParticle = treeReader->UseBranch("Particle");
+	treeReader->ReadEntry(cEvent);
 	bool hBBFound = false, hTauTauFound = false;
 	int nHiggs = 0;
 	if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau check", 1);
 	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
-		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25 && std::abs(((GenParticle*)branchParticle->At(p))->Status) == 22) { //Particle is Higgs
+		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25) { //Particle is Higgs
 			if (((GenParticle*)branchParticle->At(p))->D1 >= 0 && ((GenParticle*)branchParticle->At(p))->D2 >= 0) { //Daughters exists
 				if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
 						((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
@@ -536,6 +542,8 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 						if (hBB != NULL) *hBB = p; //Point to Higgs
 						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
 							if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
+							chain->Delete();
+							delete treeReader;
 							return true;
 						}
 					}
@@ -545,6 +553,8 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 						if (hTauTau != NULL) *hTauTau = p; //Point to Higgs
 						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
 							if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
+							chain->Delete();
+							delete treeReader;
 							return true;
 						}
 					}
@@ -553,9 +563,50 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 			if (nHiggs >= 2) break; //Both Higgs found
 		}
 	}
-	if (debug) std::cout << "Both Higgs not found rejecting event\n";
+	chain->Delete();
+	delete treeReader;
 	return false; //Both h->bb and h->tautau not found
 }
+
+// bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauTau=NULL, std::map<std::string, TH1D*>* plots=NULL) {
+// 	/*Make sure event is hh->bbtautau, and point hbb and htautau to the Higgs*/
+// 	bool hBBFound = false, hTauTauFound = false;
+// 	int nHiggs = 0;
+// 	if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau check", 1);
+// 	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
+// 		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25 && std::abs(((GenParticle*)branchParticle->At(p))->Status) == 22) { //Particle is Higgs
+// 			if (((GenParticle*)branchParticle->At(p))->D1 >= 0 && ((GenParticle*)branchParticle->At(p))->D2 >= 0) { //Daughters exists
+// 				if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
+// 						((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
+// 					nHiggs++;
+// 					if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID));
+// 					if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID));
+// 					if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 5
+// 							&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 5) { //Daughters are b quarks
+// 						hBBFound = true;
+// 						if (hBB != NULL) *hBB = p; //Point to Higgs
+// 						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+// 							if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
+// 							return true;
+// 						}
+// 					}
+// 					if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 15
+// 							&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 15) { //Daughters are taus
+// 						hTauTauFound = true;
+// 						if (hTauTau != NULL) *hTauTau = p; //Point to Higgs
+// 						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+// 							if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
+// 							return true;
+// 						}
+// 					}
+// 				}
+// 			}
+// 			if (nHiggs >= 2) break; //Both Higgs found
+// 		}
+// 	}
+// 	if (debug) std::cout << "Both Higgs not found rejecting event\n";
+// 	return false; //Both h->bb and h->tautau not found
+// }
 
 bool checkDiJet(TClonesArray* particles,
 	TLorentzVector v_0, TLorentzVector v_1,
@@ -1320,7 +1371,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							mPT_pT = tmpMPT->MET;
 							mPT_phi = tmpMPT->Phi;
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
-								if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
+								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
+								if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
 																v_bJet_0, v_bJet_1,
@@ -1494,7 +1546,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 							if (debug) std::cout << "Accepted e_tau_b_b event\n";
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
-								if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
+								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
+								if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
 																v_bJet_0, v_bJet_1,
@@ -1664,7 +1717,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 								if (debug) std::cout << "Accepted tau_tau_b_b event\n";
 								if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
-								if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
+								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
+									if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
 																v_bJet_0, v_bJet_1,
