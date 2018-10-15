@@ -560,7 +560,8 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 bool checkDiJet(TClonesArray* particles,
 	TLorentzVector v_0, TLorentzVector v_1,
 	int mother, int pID,
-	int* swap, double R) {
+	int* swap, double R,
+	TH1D* dRPlot) {
 	/*Checks whether the particles are within their nearest jet*/
 	//Associate particles to closest found jet___
 	int p_0 = -1, p_1 = -1;
@@ -586,6 +587,10 @@ bool checkDiJet(TClonesArray* particles,
 	if (dR_0 > R || dR_1 > R) { //particle(s) outside jet
 		return false;
 	}
+	//___________________________________________
+	//Accept association and fill plot___________
+	dRPlot->Fill(dR_0);
+	dRPlot->Fill(dR_1);
 	//___________________________________________
 	return true;
 }
@@ -665,12 +670,12 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
 		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
 	}
-	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
+	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
 	//___________________________________________
 	//Check taus_________________________________
 	if (debug) std::cout << "Checking taus\n";
 	(*plots)["cuts"]->Fill("#taus check", 1);
-	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " check").c_str(), 1);
+	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " check").c_str(), 1);
 	GenParticle *tau_0, *tau_1;
 	higgs = (GenParticle*)branchParticle->At(hTauTau);
 	if (debug) std::cout << "Higgs loaded\n";
@@ -732,7 +737,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (debug) std::cout << "MC check fails due to tau-jet check\n";
 			return false; //Tau outside selected jet
 		}
-		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
+		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
 		//_______________________________________
 		//_______________________________________
 	} else {
@@ -768,7 +773,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (debug) std::cout << "MC check fails due to both leptons coming from same tau\n";
 			return false; //Leptons both came from same mother (somehow)
 		}
-		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
+		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
 		if ((lightLepton_0->PT > lightLepton_1->PT & leptonMother_0 == 1) |
 				(lightLepton_0->PT < lightLepton_1->PT & leptonMother_0 == 0)) {
 			tau_0 = tau_1;
