@@ -902,6 +902,7 @@ bool truthCut(std::string input, Long64_t cEvent, int b_0, int b_1, int l_0, int
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchParticle = treeReader->UseBranch("Particle");
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
+	TClonesArray *branchMuon, *branchJet;
 	if (input.find("13Te") != std::string::npos) {
 		branchMuon = treeReader->UseBranch("Muon");
 		branchJet = treeReader->UseBranch("Jet");
@@ -1468,7 +1469,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	TChain *chain = new TChain("Delphes");
 	chain->Add(options["-i"].c_str());
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
-		TClonesArray *branchMuon, *branchJet, *branchMissingET;
+	TClonesArray *branchMuon, *branchJet, *branchMissingET;
 	if (options["-i"].find("13Te") != std::string::npos) {
 		branchMuon = treeReader->UseBranch("Muon");
 		branchJet = treeReader->UseBranch("Jet");
