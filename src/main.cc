@@ -1010,6 +1010,10 @@ bool truthCut(std::string input, Long64_t cEvent, int b_0, int b_1, int l_0, int
 		} else if (options[1] == "electron") {
 			lightLepton_1 = (GenParticle*)((Electron*)branchElectron->At(l_1))->Particle.GetObject();
 		}
+		if (lightLepton->IsPU) {
+			if (debug) std::cout << "MC check fails due to light lepton being PU\n";
+			return false;
+		}
 		//_______________________________________
 		//Check taus_____________________________
 		int leptonMother_0 = ancestrySearch(lightLepton_0, tau_0, tau_1, branchParticle);
