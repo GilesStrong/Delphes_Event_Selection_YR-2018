@@ -517,21 +517,25 @@ int moveToEnd(int p, TClonesArray* particles) {
 	return p;
 }
 
-bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauTau=NULL) {
+bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauTau=NULL, std::map<std::string, TH1D*>* plots=NULL) {
 	/*Make sure event is hh->bbtautau, and point hbb and htautau to the Higgs*/
 	bool hBBFound = false, hTauTauFound = false;
 	int nHiggs = 0;
+	if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau check", 1);
 	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
 		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25) { //Particle is Higgs
 			if (((GenParticle*)branchParticle->At(p))->D1 >= 0 && ((GenParticle*)branchParticle->At(p))->D2 >= 0) { //Daughters exists
 				if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
 						((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
 					nHiggs++;
+					if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID));
+					if (plots != NULL) (*plots)["higgsDecay"]->Fill(std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID));
 					if (std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID) == 5
 							&& std::abs(((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID) == 5) { //Daughters are b quarks
 						hBBFound = true;
 						if (hBB != NULL) *hBB = p; //Point to Higgs
 						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+							if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
 							return true;
 						}
 					}
@@ -540,6 +544,7 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 						hTauTauFound = true;
 						if (hTauTau != NULL) *hTauTau = p; //Point to Higgs
 						if (hBBFound && hTauTauFound) { //h->bb and h->tautau found, so accept event
+							if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau pass", 1);
 							return true;
 						}
 					}
@@ -613,6 +618,17 @@ int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* paren
 	return ancestor;
 }
 
+std::string typeLookup(std::vector<std::string> options) {
+	/*Lookup for histogram bin name*/
+	if (options[0] == "electron" && options[1] == "electron") return "ee";
+	if (options[0] == "muon" && options[1] == "muon") return "#mu#mu";
+	if (options[0] == "tau" && options[1] == "tau") return "#tau_{h}#tau_{h}";
+	if (options[0] == "electron" && options[1] == "muon") return "e#mu";
+	if (options[0] == "tau" && options[1] == "electron") return "e#tau_{h}";
+	if (options[0] == "tau" && options[1] == "muon") return "#mu#tau_{h}";
+	return "error";
+}
+
 bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		TClonesArray* branchMuon, TClonesArray* branchElectron,
 		TLorentzVector v_b_0, TLorentzVector v_b_1,
@@ -621,8 +637,10 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		TLorentzVector* v_gen_higgs_bb, TLorentzVector* v_gen_higgs_tt,
 		TLorentzVector* v_gen_tau_0, TLorentzVector* v_gen_tau_1,
 		TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1,
-		std::vector<std::string> options) {
+		std::vector<std::string> options,
+		std::map<std::string, TH1D*>* plots) {
 	/*Checks whether selected final states are correct*/
+	(*plots)["cuts"]->Fill("MC-truth check", 1);
 	double jetRadius = 0.5;
 	int swap;
 	if (debug) std::cout << "Higgs to bb at " << hBB << " Higgs to tau tau at " << hTauTau << "\n";
@@ -634,10 +652,12 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	//Check b jets_______________________________
 	GenParticle *bJet_0, *bJet_1;
 	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
-	if (!checkDiJet(branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius)) {
+	if (!checkDiJet(branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius, (*plots)["bMatch"])) {
 		if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
 		return false; //tau-jet selection incorrect
 	}
+	if (debug) std::cout << "Both b jets confirmed\n";
+	(*plots)["cuts"]->Fill("b-jets pass", 1);
 	if (swap) {
 		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
 		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
@@ -645,15 +665,18 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
 		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
 	}
+	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
 	//___________________________________________
 	//Check taus_________________________________
 	if (debug) std::cout << "Checking taus\n";
+	(*plots)["cuts"]->Fill("#taus check", 1);
+	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " check").c_str(), 1);
 	GenParticle *tau_0, *tau_1;
 	higgs = (GenParticle*)branchParticle->At(hTauTau);
 	if (debug) std::cout << "Higgs loaded\n";
 	if (options[0] == "tau" && options[1] == "tau") {
 		//h->tau_h tau_h_________________________
-		if (!checkDiJet(branchParticle, ((Jet*)branchJet->At(l_0))->P4(), ((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius)) {
+		if (!checkDiJet(branchParticle, ((Jet*)branchJet->At(l_0))->P4(), ((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius, (*plots)["bMatch"])) {
 			if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
 			return false; //tau-jet selection incorrect
 		}
@@ -709,6 +732,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (debug) std::cout << "MC check fails due to tau-jet check\n";
 			return false; //Tau outside selected jet
 		}
+		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
 		//_______________________________________
 		//_______________________________________
 	} else {
@@ -744,6 +768,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (debug) std::cout << "MC check fails due to both leptons coming from same tau\n";
 			return false; //Leptons both came from same mother (somehow)
 		}
+		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(mode) + " pass").c_str(), 1);
 		if ((lightLepton_0->PT > lightLepton_1->PT & leptonMother_0 == 1) |
 				(lightLepton_0->PT < lightLepton_1->PT & leptonMother_0 == 0)) {
 			tau_0 = tau_1;
@@ -755,6 +780,8 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	if (debug) std::cout << "Both taus confirmed\n";
 	//___________________________________________
 	if (debug) std::cout << "Event accepted\n";
+	(*plots)["cuts"]->Fill("#taus pass", 1);
+	(*plots)["cuts"]->Fill("MC-truth pass", 1);
 	//Get vectors for regression_________________
 	*v_gen_higgs_bb = ((GenParticle*)branchParticle->At(hBB))->P4();
 	*v_gen_higgs_tt = ((GenParticle*)branchParticle->At(hTauTau))->P4();
@@ -1109,6 +1136,31 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	TH1D* h_e_tau_b_b_cutFlow;
 	TH1D* h_mu_tau_b_b_cutFlow;
 	TH1D* h_tau_tau_b_b_cutFlow;
+	std::map<std::string, TH1D*> mcTruthPlots;
+	mcTruthPlots.insert(std::make_pair("cuts", new TH1D("mcTruth_cutFlow", "MC Truth Cuts", 20, -2.0, 2.0)));
+	mcTruthPlots.insert(std::make_pair("bMatch", new TH1D("mcTruth_bJetMatching", "#DeltaR(b, jet)", 50, 0.0, 0.5)));
+	mcTruthPlots.insert(std::make_pair("tauMatch", new TH1D("mcTruth_tauJetMatching", "#DeltaR(#tau, jet)", 50, 0.0, 0.5)));
+	mcTruthPlots.insert(std::make_pair("higgsDecay", new TH1D("mcTruth_higgsDecay", "Higgs product |PID|", 50, 0, 50)));
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(1, "hh->bb#tau#tau check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(2, "hh->bb#tau#tau pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(3, "MC-truth check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(4, "MC-truth pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(5, "b-jets check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(6, "b-jets pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(7, "#taus check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(8, "#taus pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(9, "h->#tau#tau->ee check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(10, "h->#tau#tau->ee pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(11, "h->#tau#tau->e#mu check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(12, "h->#tau#tau->e#mu pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(13, "h->#tau#tau->#mu#mu check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(14, "h->#tau#tau->#mu#mu pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(15, "h->#tau#tau->e#tau_{h} check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(16, "h->#tau#tau->e#tau_{h} pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(17, "h->#tau#tau->#mu#tau_{h} check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(18, "h->#tau#tau->#mu#tau_{h} pass");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(19, "h->#tau#tau->#tau_{h}#tau_{h} check");
+	mcTruthPlots["cuts"]->GetXaxis()->SetBinLabel(20, "h->#tau#tau->#tau_{h}#tau_{h} pass");
 	h_e_tau_b_b_cutFlow = new TH1D("e_tau_b_b_Cut_Flow", "e #tau_{h} b #bar{b} cut flow", 5, -0.5, 0.5);
 	h_mu_tau_b_b_cutFlow = new TH1D("mu_tau_b_b_Cut_Flow", "#mu #tau_{h} b #bar{b} cut flow", 5, -0.5, 0.5);
 	h_tau_tau_b_b_cutFlow = new TH1D("tau_tau_b_b_Cut_Flow", "#tau_{h} #tau_{h} b #bar{b} cut flow", 5, -0.5, 0.5);
@@ -1131,6 +1183,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_tau_tau_b_b_cutFlow->GetXaxis()->SetBinLabel(3, "Quality #tau#tau");
 	h_tau_tau_b_b_cutFlow->GetXaxis()->SetBinLabel(4, "OS");
 	h_tau_tau_b_b_cutFlow->GetXaxis()->SetBinLabel(5, "Quality b#bar{b}");
+
 	std::cout << "Plots initialised\n";
 	//___________________________________________
 	//Load data__________________________________
@@ -1258,7 +1311,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							mPT_pT = tmpMPT->MET;
 							mPT_phi = tmpMPT->Phi;
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
-								if (correctDecayChannel(branchParticle, &hBB, &hTauTau)) {
+								if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
 																v_bJet_0, v_bJet_1,
@@ -1267,7 +1320,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 																&v_gen_higgs_bb,  &v_gen_higgs_tt,
 																&v_gen_tau_0, &v_gen_tau_1,
 																&v_gen_bJet_0, &v_gen_bJet_1,
-																{"tau", "muon"});
+																{"tau", "muon"},
+																&mcTruthPlots);
 								}
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
@@ -1431,7 +1485,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 							if (debug) std::cout << "Accepted e_tau_b_b event\n";
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
-								if (correctDecayChannel(branchParticle, &hBB, &hTauTau)) {
+								if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
 																v_bJet_0, v_bJet_1,
@@ -1440,7 +1494,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 																&v_gen_higgs_bb,  &v_gen_higgs_tt,
 																&v_gen_tau_0, &v_gen_tau_1,
 																&v_gen_bJet_0, &v_gen_bJet_1,
-																{"tau", "electron"});
+																{"tau", "electron"},
+																&mcTruthPlots);
 								}
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
@@ -1600,7 +1655,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
 								if (debug) std::cout << "Accepted tau_tau_b_b event\n";
 								if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
-								if (correctDecayChannel(branchParticle, &hBB, &hTauTau)) {
+								if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
 									gen_mctMatch = getGenSystem(branchParticle, branchJet,
 																branchMuon, branchElectron,
 																v_bJet_0, v_bJet_1,
@@ -1609,7 +1664,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 																&v_gen_higgs_bb,  &v_gen_higgs_tt,
 																&v_gen_tau_0, &v_gen_tau_1,
 																&v_gen_bJet_0, &v_gen_bJet_1,
-																{"tau", "tau"});
+																{"tau", "tau"},
+																&mcTruthPlots);
 									}
 								}
 								v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
@@ -1736,6 +1792,30 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 	h_tau_tau_b_b_cutFlow->Draw();
 	h_tau_tau_b_b_cutFlow->Write();
 	delete c_tau_tau_b_b_cutFlow;
+	TCanvas* c_mcTruth_cutFlow = new TCanvas();
+	mcTruthPlots["cuts"]->GetXaxis()->SetTitle("Cuts");
+	mcTruthPlots["cuts"]->GetYaxis()->SetTitle("Events");
+	mcTruthPlots["cuts"]->Draw();
+	mcTruthPlots["cuts"]->Write();
+	delete c_mcTruth_cutFlow;
+	TCanvas* c_mcTruth_bJetMatch = new TCanvas();
+	mcTruthPlots["bMatch"]->GetXaxis()->SetTitle("#DeltaR(b, jet)");
+	mcTruthPlots["bMatch"]->GetYaxis()->SetTitle("Events");
+	mcTruthPlots["bMatch"]->Draw();
+	mcTruthPlots["bMatch"]->Write();
+	delete c_mcTruth_bJetMatch;
+	TCanvas* c_mcTruth_tauJetMatch = new TCanvas();
+	mcTruthPlots["tauMatch"]->GetXaxis()->SetTitle("#DeltaR(#tau, jet)");
+	mcTruthPlots["tauMatch"]->GetYaxis()->SetTitle("Events");
+	mcTruthPlots["tauMatch"]->Draw();
+	mcTruthPlots["tauMatch"]->Write();
+	delete c_mcTruth_tauJetMatch;
+	TCanvas* c_mcTruth_higgsDecay = new TCanvas();
+	mcTruthPlots["higgsDecay"]->GetXaxis()->SetTitle("Higgs product |PID|");
+	mcTruthPlots["higgsDecay"]->GetYaxis()->SetTitle("Events");
+	mcTruthPlots["higgsDecay"]->Draw();
+	mcTruthPlots["higgsDecay"]->Write();
+	delete c_mcTruth_higgsDecay;
 	std::cout << "Plots created\n";
 	//___________________________________________
 	//Save datasets______________________________
