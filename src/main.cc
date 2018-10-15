@@ -1564,6 +1564,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 		hBB = -1;
 		hTauTau = -1;
 		gen_mctMatch = false;
+		if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal
+			if (!correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) continue;
+		}
 		TLorentzVector v_gen_higgs_bb, v_gen_higgs_tt, v_gen_diHiggs, v_gen_tau_0, v_gen_tau_1, v_gen_bJet_0, v_gen_bJet_1;
 		//Check for mu tau b b finalstates___
 		h_mu_tau_b_b_cutFlow->Fill("All", 1);
@@ -1639,7 +1642,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							mPT_phi = tmpMPT->Phi;
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
 								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
-								if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
+								//if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
 									// gen_mctMatch = getGenSystem(branchParticle, branchJet,
 									// 							branchMuon, branchElectron,
 									// 							v_bJet_0, v_bJet_1,
@@ -1654,7 +1657,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 														taus[0], muons[0], hBB, hTauTau, {"tau", "muon"},
 														&mcTruthPlots, &v_gen_higgs_bb, &v_gen_higgs_tt,
 														&v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
-								}
+								//}
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
 							gen_t_0_pT = v_gen_tau_0.Pt();
@@ -1818,7 +1821,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							if (debug) std::cout << "Accepted e_tau_b_b event\n";
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
 								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
-								if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
+								//if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
 									// gen_mctMatch = getGenSystem(branchParticle, branchJet,
 									// 							branchMuon, branchElectron,
 									// 							v_bJet_0, v_bJet_1,
@@ -1833,7 +1836,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 														taus[0], electrons[0], hBB, hTauTau, {"tau", "electon"},
 														&mcTruthPlots, &v_gen_higgs_bb, &v_gen_higgs_tt,
 														&v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
-								}
+								//}
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
 							gen_t_0_pT = v_gen_tau_0.Pt();
@@ -1993,7 +1996,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (debug) std::cout << "Accepted tau_tau_b_b event\n";
 								if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
 								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
-									if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
+									//if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
 									// gen_mctMatch = getGenSystem(branchParticle, branchJet,
 									// 							branchMuon, branchElectron,
 									// 							v_bJet_0, v_bJet_1,
@@ -2008,7 +2011,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 														tau_0, tau_1, hBB, hTauTau, {"tau", "tau"},
 														&mcTruthPlots, &v_gen_higgs_bb, &v_gen_higgs_tt,
 														&v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
-									}
+									//}
 								}
 								v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
 								gen_t_0_pT = v_gen_tau_0.Pt();
