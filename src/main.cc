@@ -905,7 +905,7 @@ bool truthCut(std::string input, Long64_t cEvent, int b_0, int b_1, int l_0, int
 	TClonesArray *branchMuon = treeReader->UseBranch("Muon");
 	TClonesArray *branchJet = treeReader->UseBranch("Jet");
 	treeReader->ReadEntry(cEvent);
-	if (debug) std::cout << "Loading data for MC truth cut on event mode " << options << "\n";
+	if (debug) std::cout << "Loading data for MC truth cut on event mode " << options[0] << ":" options[1] << "\n";
 	//Check if selected final states are correct_
 	(*plots)["cuts"]->Fill("MC-truth check", 1);
 	int swap;
