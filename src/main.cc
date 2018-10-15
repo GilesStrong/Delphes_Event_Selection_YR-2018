@@ -608,21 +608,58 @@ bool correctDecayChannel(std::string input, Long64_t cEvent,
 // 	return false; //Both h->bb and h->tautau not found
 // }
 
-bool checkDiJet(TClonesArray* particles,
-	TLorentzVector v_0, TLorentzVector v_1,
-	int mother, int pID,
-	int* swap, double R,
-	TH1D* dRPlot) {
+// bool checkDiJet(TClonesArray* particles,
+// 	TLorentzVector v_0, TLorentzVector v_1,
+// 	int mother, int pID,
+// 	int* swap, double R,
+// 	TH1D* dRPlot) {
+// 	/*Checks whether the particles are within their nearest jet*/
+// 	//Associate particles to closest found jet___
+// 	int p_0 = -1, p_1 = -1;
+// 	GenParticle* higgs = (GenParticle*)particles->At(mother);
+// 	if (std::abs(((GenParticle*)particles->At(moveToEnd(higgs->D1, particles)))->PID) != pID) { //Make sure decays products are correct
+// 		std::cout << "Something's gone wrong in h->" + doubleToString(pID) + " -" + doubleToString(pID) + "!\n";
+// 		return false;
+// 	}
+// 	if (((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(v_0) <
+//         ((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(v_1)) {
+// 		p_0 = higgs->D1;
+//         p_1 = higgs->D2;
+//         if (swap != NULL) *swap = 0;
+//     } else {
+//         p_0 = higgs->D2;
+// 		p_1 = higgs->D1;
+//         if (swap != NULL) *swap = 1;
+//     }
+// 	//___________________________________________
+// 	//Check jets_________________________________
+// 	double dR_0 = ((GenParticle*)particles->At(p_0))->P4().DeltaR(v_0);
+// 	double dR_1 = ((GenParticle*)particles->At(p_1))->P4().DeltaR(v_1);
+// 	if (dR_0 > R || dR_1 > R) { //particle(s) outside jet
+// 		return false;
+// 	}
+// 	//___________________________________________
+// 	//Accept association and fill plot___________
+// 	dRPlot->Fill(dR_0);
+// 	dRPlot->Fill(dR_1);
+// 	//___________________________________________
+// 	return true;
+// }
+
+bool checkDiJet(TClonesArray* jets, TClonesArray* particles, int j_0, int j_1, int mother, int pID,
+		int* swap, TH1D* dRPlot, double R) {
 	/*Checks whether the particles are within their nearest jet*/
 	//Associate particles to closest found jet___
 	int p_0 = -1, p_1 = -1;
+	Jet* jet_0 = (Jet*)jets->At(j_0);
+	Jet* jet_1 = (Jet*)jets->At(j_1);
 	GenParticle* higgs = (GenParticle*)particles->At(mother);
 	if (std::abs(((GenParticle*)particles->At(moveToEnd(higgs->D1, particles)))->PID) != pID) { //Make sure decays products are correct
 		std::cout << "Something's gone wrong in h->" + doubleToString(pID) + " -" + doubleToString(pID) + "!\n";
 		return false;
 	}
-	if (((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(v_0) <
-        ((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(v_1)) {
+	if (((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(jet_0->P4()) <
+        ((GenParticle*)particles->At(higgs->D1))->P4().DeltaR(jet_1->P4())) {
 		p_0 = higgs->D1;
         p_1 = higgs->D2;
         if (swap != NULL) *swap = 0;
@@ -633,8 +670,8 @@ bool checkDiJet(TClonesArray* particles,
     }
 	//___________________________________________
 	//Check jets_________________________________
-	double dR_0 = ((GenParticle*)particles->At(p_0))->P4().DeltaR(v_0);
-	double dR_1 = ((GenParticle*)particles->At(p_1))->P4().DeltaR(v_1);
+	double dR_0 = ((GenParticle*)particles->At(p_0))->P4().DeltaR(jet_0->P4());
+	double dR_1 = ((GenParticle*)particles->At(p_1))->P4().DeltaR(jet_1->P4());
 	if (dR_0 > R || dR_1 > R) { //particle(s) outside jet
 		return false;
 	}
@@ -651,7 +688,7 @@ int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* paren
 	int ancestor = -1;
 	if (debug) std::cout << "size: " << particles->GetEntries() << ", mothers: " << child->M1  << " " << child->M2 << "\n";
 	GenParticle* mother;
-	if (child->M1 > 0 && child->M1 < particles->GetEntries()) { //Check first mother
+	if (child->M1 > 0) {// && child->M1 < particles->GetEntries()) { //Check first mother
 		mother = (GenParticle*)particles->At(child->M1);
 		if (mother->GetUniqueID() == parent_0->GetUniqueID()) {
 			return 0;
@@ -661,7 +698,7 @@ int ancestrySearch(GenParticle* child, GenParticle* parent_0, GenParticle* paren
 			ancestor = ancestrySearch(mother, parent_0, parent_1, particles); //Recursive search
 		}
 	}
-	if (ancestor == -1 && child->M2 > 0 && child->M2 < particles->GetEntries()) { //Check second mother
+	if (ancestor == -1 && child->M2 > 0) {// && child->M2 < particles->GetEntries()) { //Check second mother
 		mother = (GenParticle*)particles->At(child->M2);
 		if (mother->GetUniqueID() == parent_0->GetUniqueID()) {
 			return 0;
@@ -685,32 +722,202 @@ std::string typeLookup(std::vector<std::string> options) {
 	return "error";
 }
 
-bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
-		TClonesArray* branchMuon, TClonesArray* branchElectron,
-		TLorentzVector v_b_0, TLorentzVector v_b_1,
-		int l_0, int l_1,
-		int hBB, int hTauTau,
+// bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
+// 		TClonesArray* branchMuon, TClonesArray* branchElectron,
+// 		TLorentzVector v_b_0, TLorentzVector v_b_1,
+// 		int l_0, int l_1,
+// 		int hBB, int hTauTau,
+// 		TLorentzVector* v_gen_higgs_bb, TLorentzVector* v_gen_higgs_tt,
+// 		TLorentzVector* v_gen_tau_0, TLorentzVector* v_gen_tau_1,
+// 		TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1,
+// 		std::vector<std::string> options,
+// 		std::map<std::string, TH1D*>* plots) {
+// 	/*Checks whether selected final states are correct*/
+// 	(*plots)["cuts"]->Fill("MC-truth check", 1);
+// 	double jetRadius = 0.5;
+// 	int swap;
+// 	if (debug) std::cout << "Higgs to bb at " << hBB << " Higgs to tau tau at " << hTauTau << "\n";
+// 	if (debug) std::cout << "tau 0 at " << l_0 << " tau 1 at " << l_1 << "\n";
+// 	if (debug) std::cout << "sizes " << branchParticle->GetEntries() << " " << 
+// 										branchJet->GetEntries() << " " <<
+// 										branchMuon->GetEntries() << " " <<
+// 										branchElectron->GetEntries() << "\n";
+// 	//Check b jets_______________________________
+// 	GenParticle *bJet_0, *bJet_1;
+// 	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
+// 	if (!checkDiJet(branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius, (*plots)["bMatch"])) {
+// 		if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
+// 		return false; //tau-jet selection incorrect
+// 	}
+// 	if (debug) std::cout << "Both b jets confirmed\n";
+// 	(*plots)["cuts"]->Fill("b-jets pass", 1);
+// 	if (swap) {
+// 		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+// 		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+// 	} else {
+// 		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+// 		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+// 	}
+// 	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
+// 	//___________________________________________
+// 	//Check taus_________________________________
+// 	if (debug) std::cout << "Checking taus\n";
+// 	(*plots)["cuts"]->Fill("#taus check", 1);
+// 	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " check").c_str(), 1);
+// 	GenParticle *tau_0, *tau_1;
+// 	higgs = (GenParticle*)branchParticle->At(hTauTau);
+// 	if (debug) std::cout << "Higgs loaded\n";
+// 	if (options[0] == "tau" && options[1] == "tau") {
+// 		//h->tau_h tau_h_________________________
+// 		if (!checkDiJet(branchParticle, ((Jet*)branchJet->At(l_0))->P4(), ((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius, (*plots)["bMatch"])) {
+// 			if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
+// 			return false; //tau-jet selection incorrect
+// 		}
+// 		if (swap) {
+// 			tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+// 			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+// 		} else {
+// 			tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+// 			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+// 		}
+// 		if (debug) std::cout << "gen tau 0" << tau_0 << " gen tau 1 " << tau_1 << "\n";
+// 		//_______________________________________
+// 	} else if ((options[0] == "tau" && options[1] != "tau") || (options[0] != "tau" && options[1] == "tau")) {
+// 		//h->tau_h light-lepton__________________
+// 		//Load objects___________________________
+// 		tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+// 		tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+// 		if (debug) std::cout << "gen tau 0" << tau_0 << " gen tau 1 " << tau_1 << "\n";
+// 		GenParticle* lightLepton;
+// 		Jet* tauJet;
+// 		for (int i = 0; i < 2; i++) {
+// 			int l = l_0;
+// 			if (i == 1) {
+// 				l = l_1;
+// 			}
+// 			if (debug) std::cout << "i, l: " << i << ", " << l << "\n";
+// 			if (options[i] == "tau") {
+// 				tauJet = (Jet*)branchJet->At(l);
+// 			} else if (options[i] == "muon") {
+// 				lightLepton = (GenParticle*)((Muon*)branchMuon->At(l))->Particle.GetObject();
+// 			} else if (options[i] == "electron") {
+// 				lightLepton = (GenParticle*)((Electron*)branchElectron->At(l))->Particle.GetObject();
+// 			}
+// 		}
+// 		if (lightLepton->IsPU) {
+// 			if (debug) std::cout << "MC check fails due to light lepton being PU\n";
+// 			return false;
+// 		}
+// 		//_______________________________________
+// 		//Check taus_____________________________
+// 		if (debug) std::cout << "Beginning ancestrySearch\n";
+// 		int leptonMother = ancestrySearch(lightLepton, tau_0, tau_1, branchParticle);
+// 		if (leptonMother == -1) {
+// 			if (debug) std::cout << "MC check fails due to ancestry check\n";
+// 			return false; //Light lepton did not come from tau decay
+// 		}
+// 		if (debug) std::cout << "leptonMother" << leptonMother << "\n";
+// 		GenParticle* tauh;
+// 		if (leptonMother == 0) {
+// 			tauh = tau_1;
+// 			tau_1 = tau_0; //Reassociate 0 to tau and 1 to lepton
+// 			tau_0 = tauh;
+// 		} else {
+// 			tauh = tau_0;
+// 		}
+// 		if (tauh->P4().DeltaR(tauJet->P4()) > jetRadius) {
+// 			if (debug) std::cout << "MC check fails due to tau-jet check\n";
+// 			return false; //Tau outside selected jet
+// 		}
+// 		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
+// 		//_______________________________________
+// 		//_______________________________________
+// 	} else {
+// 		//h->light-lepton light-lepton___________
+// 		//Load objects___________________________
+// 		GenParticle* higgs = (GenParticle*)branchParticle->At(hTauTau);
+// 		tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+// 		tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
+// 		GenParticle *lightLepton_0, *lightLepton_1;
+// 		if (options[0] == "muon") {
+// 			lightLepton_0 = (GenParticle*)((Muon*)branchMuon->At(l_0))->Particle.GetObject();
+// 		} else if (options[0] == "electron") {
+// 			lightLepton_0 = (GenParticle*)((Electron*)branchElectron->At(l_0))->Particle.GetObject();
+// 		}
+// 		if (options[1] == "muon") {
+// 			lightLepton_1 = (GenParticle*)((Muon*)branchMuon->At(l_1))->Particle.GetObject();
+// 		} else if (options[1] == "electron") {
+// 			lightLepton_1 = (GenParticle*)((Electron*)branchElectron->At(l_1))->Particle.GetObject();
+// 		}
+// 		//_______________________________________
+// 		//Check taus_____________________________
+// 		int leptonMother_0 = ancestrySearch(lightLepton_0, tau_0, tau_1, branchParticle);
+// 		if (leptonMother_0 == -1) {
+// 			if (debug) std::cout << "MC check fails due to ancestry check\n";
+// 			return false; //Light lepton 0 did not come from tau decay
+// 		}
+// 		int leptonMother_1 = ancestrySearch(lightLepton_1, tau_0, tau_1, branchParticle);
+// 		if (leptonMother_1 == -1) {
+// 			if (debug) std::cout << "MC check fails due to ancestry check\n";
+// 			return false; //Light lepton 1 did not come from tau decay
+// 		}
+// 		if (leptonMother_0 == leptonMother_1) {
+// 			if (debug) std::cout << "MC check fails due to both leptons coming from same tau\n";
+// 			return false; //Leptons both came from same mother (somehow)
+// 		}
+// 		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
+// 		if ((lightLepton_0->PT > lightLepton_1->PT & leptonMother_0 == 1) |
+// 				(lightLepton_0->PT < lightLepton_1->PT & leptonMother_0 == 0)) {
+// 			tau_0 = tau_1;
+// 			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
+// 		}
+// 		//_______________________________________
+// 		//_______________________________________
+// 	}
+// 	if (debug) std::cout << "Both taus confirmed\n";
+// 	//___________________________________________
+// 	if (debug) std::cout << "Event accepted\n";
+// 	(*plots)["cuts"]->Fill("#taus pass", 1);
+// 	(*plots)["cuts"]->Fill("MC-truth pass", 1);
+// 	//Get vectors for regression_________________
+// 	*v_gen_higgs_bb = ((GenParticle*)branchParticle->At(hBB))->P4();
+// 	*v_gen_higgs_tt = ((GenParticle*)branchParticle->At(hTauTau))->P4();
+// 	*v_gen_tau_0 = tau_0->P4();
+// 	*v_gen_tau_1 = tau_1->P4();
+// 	*v_gen_bJet_0 = bJet_0->P4();
+// 	*v_gen_bJet_1 = bJet_1->P4();
+// 	//___________________________________________
+// 	return true;
+// }
+
+bool truthCut(std::string input, Long64_t cEvent, int b_0, int b_1, int l_0, int l_1, int hBB, int hTauTau,
+		std::vector<std::string> options, std::map<std::string, TH1D*>* plots,
 		TLorentzVector* v_gen_higgs_bb, TLorentzVector* v_gen_higgs_tt,
 		TLorentzVector* v_gen_tau_0, TLorentzVector* v_gen_tau_1,
-		TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1,
-		std::vector<std::string> options,
-		std::map<std::string, TH1D*>* plots) {
+		TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1) {
 	/*Checks whether selected final states are correct*/
-	(*plots)["cuts"]->Fill("MC-truth check", 1);
 	double jetRadius = 0.5;
+	TChain *chain = new TChain("Delphes");
+	chain->Add(input.c_str());
+	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
+	TClonesArray *branchParticle = treeReader->UseBranch("Particle");
+	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
+	TClonesArray *branchMuon = treeReader->UseBranch("Muon");
+	TClonesArray *branchJet = treeReader->UseBranch("Jet");
+	treeReader->ReadEntry(cEvent);
+	if (debug) std::cout << "Loading data for MC truth cut on event mode " << mode << "\n";
+	//Check if selected final states are correct_
+	(*plots)["cuts"]->Fill("MC-truth check", 1);
 	int swap;
-	if (debug) std::cout << "Higgs to bb at " << hBB << " Higgs to tau tau at " << hTauTau << "\n";
-	if (debug) std::cout << "tau 0 at " << l_0 << " tau 1 at " << l_1 << "\n";
-	if (debug) std::cout << "sizes " << branchParticle->GetEntries() << " " << 
-										branchJet->GetEntries() << " " <<
-										branchMuon->GetEntries() << " " <<
-										branchElectron->GetEntries() << "\n";
 	//Check b jets_______________________________
 	GenParticle *bJet_0, *bJet_1;
 	GenParticle* higgs = (GenParticle*)branchParticle->At(hBB);
-	if (!checkDiJet(branchParticle, v_b_0, v_b_1, hBB, 5, &swap, jetRadius, (*plots)["bMatch"])) {
-		if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
-		return false; //tau-jet selection incorrect
+	(*plots)["cuts"]->Fill("b-jets check", 1);
+	if (debug) std::cout << "Checking b-jets\n";
+	if (!checkDiJet(branchJet, branchParticle, b_0, b_1, hBB, 5, &swap, (*plots)["bMatch"], jetRadius)) {
+		if (debug) std::cout << "MC check fails due to di-Jet on b-jets check\n";
+		chain->Delete();
+		return false; //b-jet selection incorrect
 	}
 	if (debug) std::cout << "Both b jets confirmed\n";
 	(*plots)["cuts"]->Fill("b-jets pass", 1);
@@ -721,19 +928,16 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		bJet_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
 		bJet_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
 	}
-	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
 	//___________________________________________
 	//Check taus_________________________________
 	if (debug) std::cout << "Checking taus\n";
-	(*plots)["cuts"]->Fill("#taus check", 1);
-	(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " check").c_str(), 1);
 	GenParticle *tau_0, *tau_1;
 	higgs = (GenParticle*)branchParticle->At(hTauTau);
-	if (debug) std::cout << "Higgs loaded\n";
 	if (options[0] == "tau" && options[1] == "tau") {
 		//h->tau_h tau_h_________________________
-		if (!checkDiJet(branchParticle, ((Jet*)branchJet->At(l_0))->P4(), ((Jet*)branchJet->At(l_1))->P4(), hTauTau, 15, &swap, jetRadius, (*plots)["bMatch"])) {
+		if (!checkDiJet(branchJet, branchParticle, l_0, l_1, hTauTau, 15, &swap, (*plots)["tauMatch"], jetRadius)) {
 			if (debug) std::cout << "MC check fails due to di-Jet on tau-jets check\n";
+			chain->Delete();
 			return false; //tau-jet selection incorrect
 		}
 		if (swap) {
@@ -743,14 +947,13 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
 			tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
 		}
-		if (debug) std::cout << "gen tau 0" << tau_0 << " gen tau 1 " << tau_1 << "\n";
+		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
 		//_______________________________________
 	} else if ((options[0] == "tau" && options[1] != "tau") || (options[0] != "tau" && options[1] == "tau")) {
 		//h->tau_h light-lepton__________________
 		//Load objects___________________________
 		tau_0 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D1, branchParticle));
 		tau_1 = (GenParticle*)branchParticle->At(moveToEnd(higgs->D2, branchParticle));
-		if (debug) std::cout << "gen tau 0" << tau_0 << " gen tau 1 " << tau_1 << "\n";
 		GenParticle* lightLepton;
 		Jet* tauJet;
 		for (int i = 0; i < 2; i++) {
@@ -758,7 +961,6 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			if (i == 1) {
 				l = l_1;
 			}
-			if (debug) std::cout << "i, l: " << i << ", " << l << "\n";
 			if (options[i] == "tau") {
 				tauJet = (Jet*)branchJet->At(l);
 			} else if (options[i] == "muon") {
@@ -767,19 +969,14 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 				lightLepton = (GenParticle*)((Electron*)branchElectron->At(l))->Particle.GetObject();
 			}
 		}
-		if (lightLepton->IsPU) {
-			if (debug) std::cout << "MC check fails due to light lepton being PU\n";
-			return false;
-		}
 		//_______________________________________
 		//Check taus_____________________________
-		if (debug) std::cout << "Beginning ancestrySearch\n";
 		int leptonMother = ancestrySearch(lightLepton, tau_0, tau_1, branchParticle);
 		if (leptonMother == -1) {
 			if (debug) std::cout << "MC check fails due to ancestry check\n";
+			chain->Delete();
 			return false; //Light lepton did not come from tau decay
 		}
-		if (debug) std::cout << "leptonMother" << leptonMother << "\n";
 		GenParticle* tauh;
 		if (leptonMother == 0) {
 			tauh = tau_1;
@@ -790,6 +987,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		}
 		if (tauh->P4().DeltaR(tauJet->P4()) > jetRadius) {
 			if (debug) std::cout << "MC check fails due to tau-jet check\n";
+			chain->Delete();
 			return false; //Tau outside selected jet
 		}
 		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
@@ -817,15 +1015,18 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 		int leptonMother_0 = ancestrySearch(lightLepton_0, tau_0, tau_1, branchParticle);
 		if (leptonMother_0 == -1) {
 			if (debug) std::cout << "MC check fails due to ancestry check\n";
+			chain->Delete();
 			return false; //Light lepton 0 did not come from tau decay
 		}
 		int leptonMother_1 = ancestrySearch(lightLepton_1, tau_0, tau_1, branchParticle);
 		if (leptonMother_1 == -1) {
 			if (debug) std::cout << "MC check fails due to ancestry check\n";
+			chain->Delete();
 			return false; //Light lepton 1 did not come from tau decay
 		}
 		if (leptonMother_0 == leptonMother_1) {
 			if (debug) std::cout << "MC check fails due to both leptons coming from same tau\n";
+			chain->Delete();
 			return false; //Leptons both came from same mother (somehow)
 		}
 		(*plots)["cuts"]->Fill(("h->#tau#tau->" + typeLookup(options) + " pass").c_str(), 1);
@@ -850,8 +1051,11 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 	*v_gen_bJet_0 = bJet_0->P4();
 	*v_gen_bJet_1 = bJet_1->P4();
 	//___________________________________________
+	chain->Delete();
+	delete treeReader;
 	return true;
 }
+
 
 int main(int argc, char *argv[]) { //input, output, N events, truth
 	std::map<std::string, std::string> options = getOptions(argc, argv);
@@ -1373,16 +1577,20 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
 								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
 								if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
-									gen_mctMatch = getGenSystem(branchParticle, branchJet,
-																branchMuon, branchElectron,
-																v_bJet_0, v_bJet_1,
-																taus[0], muons[0],
-																hBB, hTauTau,
-																&v_gen_higgs_bb,  &v_gen_higgs_tt,
-																&v_gen_tau_0, &v_gen_tau_1,
-																&v_gen_bJet_0, &v_gen_bJet_1,
-																{"tau", "muon"},
-																&mcTruthPlots);
+									// gen_mctMatch = getGenSystem(branchParticle, branchJet,
+									// 							branchMuon, branchElectron,
+									// 							v_bJet_0, v_bJet_1,
+									// 							taus[0], muons[0],
+									// 							hBB, hTauTau,
+									// 							&v_gen_higgs_bb,  &v_gen_higgs_tt,
+									// 							&v_gen_tau_0, &v_gen_tau_1,
+									// 							&v_gen_bJet_0, &v_gen_bJet_1,
+									// 							{"tau", "muon"},
+									// 							&mcTruthPlots);
+									gen_mctMatch = truthCut(options["-i"], cEvent, bJet_0, bJet_1, //Checks final-state selection was correct
+														taus[0], muons[0], hBB, hTauTau, {"tau", "muon"},
+														&mcTruthPlots, &v_gen_higgs_bb, &v_gen_higgs_tt,
+														&v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
 								}
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
@@ -1548,16 +1756,20 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 							if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
 								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
 								if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
-									gen_mctMatch = getGenSystem(branchParticle, branchJet,
-																branchMuon, branchElectron,
-																v_bJet_0, v_bJet_1,
-																taus[0], electrons[0],
-																hBB, hTauTau,
-																&v_gen_higgs_bb,  &v_gen_higgs_tt,
-																&v_gen_tau_0, &v_gen_tau_1,
-																&v_gen_bJet_0, &v_gen_bJet_1,
-																{"tau", "electron"},
-																&mcTruthPlots);
+									// gen_mctMatch = getGenSystem(branchParticle, branchJet,
+									// 							branchMuon, branchElectron,
+									// 							v_bJet_0, v_bJet_1,
+									// 							taus[0], electrons[0],
+									// 							hBB, hTauTau,
+									// 							&v_gen_higgs_bb,  &v_gen_higgs_tt,
+									// 							&v_gen_tau_0, &v_gen_tau_1,
+									// 							&v_gen_bJet_0, &v_gen_bJet_1,
+									// 							{"tau", "electron"},
+									// 							&mcTruthPlots);
+									gen_mctMatch = truthCut(options["-i"], cEvent, bJet_0, bJet_1, //Checks final-state selection was correct
+														taus[0], electrons[0], hBB, hTauTau, {"tau", "electon"},
+														&mcTruthPlots, &v_gen_higgs_bb, &v_gen_higgs_tt,
+														&v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
 								}
 							}
 							v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
@@ -1719,16 +1931,20 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
 								if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //Signal	
 								//if (correctDecayChannel(branchParticle, &hBB, &hTauTau, &mcTruthPlots)) {
 									if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
-									gen_mctMatch = getGenSystem(branchParticle, branchJet,
-																branchMuon, branchElectron,
-																v_bJet_0, v_bJet_1,
-																tau_0, tau_1,
-																hBB, hTauTau,
-																&v_gen_higgs_bb,  &v_gen_higgs_tt,
-																&v_gen_tau_0, &v_gen_tau_1,
-																&v_gen_bJet_0, &v_gen_bJet_1,
-																{"tau", "tau"},
-																&mcTruthPlots);
+									// gen_mctMatch = getGenSystem(branchParticle, branchJet,
+									// 							branchMuon, branchElectron,
+									// 							v_bJet_0, v_bJet_1,
+									// 							tau_0, tau_1,
+									// 							hBB, hTauTau,
+									// 							&v_gen_higgs_bb,  &v_gen_higgs_tt,
+									// 							&v_gen_tau_0, &v_gen_tau_1,
+									// 							&v_gen_bJet_0, &v_gen_bJet_1,
+									// 							{"tau", "tau"},
+									// 							&mcTruthPlots);
+									gen_mctMatch = truthCut(options["-i"], cEvent, bJet_0, bJet_1, //Checks final-state selection was correct
+														tau_0, tau_1, hBB, hTauTau, {"tau", "tau"},
+														&mcTruthPlots, &v_gen_higgs_bb, &v_gen_higgs_tt,
+														&v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
 									}
 								}
 								v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
