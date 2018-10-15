@@ -902,8 +902,13 @@ bool truthCut(std::string input, Long64_t cEvent, int b_0, int b_1, int l_0, int
 	ExRootTreeReader *treeReader = new ExRootTreeReader(chain);
 	TClonesArray *branchParticle = treeReader->UseBranch("Particle");
 	TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-	TClonesArray *branchMuon = treeReader->UseBranch("Muon");
-	TClonesArray *branchJet = treeReader->UseBranch("Jet");
+	if (input.find("13Te") != std::string::npos) {
+		branchMuon = treeReader->UseBranch("Muon");
+		branchJet = treeReader->UseBranch("Jet");
+	} else {
+		branchMuon = treeReader->UseBranch("MuonLoose");
+		branchJet = treeReader->UseBranch("JetPUPPI");
+	}
 	treeReader->ReadEntry(cEvent);
 	if (debug) std::cout << "Loading data for MC truth cut on event mode " << options[0] << ":" << options[1] << "\n";
 	//Check if selected final states are correct_
