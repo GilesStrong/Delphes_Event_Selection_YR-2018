@@ -523,7 +523,7 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 	int nHiggs = 0;
 	if (plots != NULL) (*plots)["cuts"]->Fill("hh->bb#tau#tau check", 1);
 	for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
-		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25) { //Particle is Higgs
+		if (std::abs(((GenParticle*)branchParticle->At(p))->PID) == 25 && std::abs(((GenParticle*)branchParticle->At(p))->Status) == 22) { //Particle is Higgs
 			if (((GenParticle*)branchParticle->At(p))->D1 >= 0 && ((GenParticle*)branchParticle->At(p))->D2 >= 0) { //Daughters exists
 				if (((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D1))->PID != 25 &&
 						((GenParticle*)branchParticle->At(((GenParticle*)branchParticle->At(p))->D2))->PID != 25) {
@@ -553,7 +553,7 @@ bool correctDecayChannel(TClonesArray* branchParticle, int* hBB=NULL, int* hTauT
 			if (nHiggs >= 2) break; //Both Higgs found
 		}
 	}
-	if (debug) std::cout << "Both Higgs not found rejectig event\n";
+	if (debug) std::cout << "Both Higgs not found rejecting event\n";
 	return false; //Both h->bb and h->tautau not found
 }
 
@@ -715,6 +715,10 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 			} else if (options[i] == "electron") {
 				lightLepton = (GenParticle*)((Electron*)branchElectron->At(l))->Particle.GetObject();
 			}
+		}
+		if (lightLepton.IsPU) {
+			if (debug) std::cout << "MC check fails due to light lepton being PU\n";
+			return false;
 		}
 		//_______________________________________
 		//Check taus_____________________________
