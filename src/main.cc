@@ -716,7 +716,7 @@ bool getGenSystem(TClonesArray* branchParticle, TClonesArray* branchJet,
 				lightLepton = (GenParticle*)((Electron*)branchElectron->At(l))->Particle.GetObject();
 			}
 		}
-		if (lightLepton.IsPU) {
+		if (lightLepton->IsPU) {
 			if (debug) std::cout << "MC check fails due to light lepton being PU\n";
 			return false;
 		}
