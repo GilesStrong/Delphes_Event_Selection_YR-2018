@@ -576,7 +576,7 @@ bool getGenSystem(TClonesArray* branchParticle,
 
     std::vector<TLorentzVector> higgs, bquarks, taus, anti_bquarks, anti_taus;
     for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
-        tmpParticle = (GenParticle*)branchParticle->At(p)
+        tmpParticle = (GenParticle*)branchParticle->At(p);
         if (tmpParticle->Status != 22 || tmpParticle->IsPU == true) continue;
         if (tmpParticle->PID == 25) {
             higgs.push_back(tmpParticle->P4());
@@ -625,7 +625,7 @@ bool getGenSystem(TClonesArray* branchParticle,
         }
 
         //Match bquarks to Higgs
-        min_dR = 999
+        min_dR = 999;
         for (TLorentzVector i : bquarks) {
             for (TLorentzVector j : anti_bquarks) {
                 sum = i+j;
