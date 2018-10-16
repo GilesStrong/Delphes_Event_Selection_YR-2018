@@ -591,7 +591,7 @@ bool getGenSystem(TClonesArray* branchParticle,
         }
     }
     if (higgs.size() != 2) {
-        throw std::runtime_error("Signal contains " << higgs.size() << " status 22 Higgs");
+        throw std::runtime_error("Signal doesn't contain exactly 2 status 22 Higgs");
         return false;
     }
 
