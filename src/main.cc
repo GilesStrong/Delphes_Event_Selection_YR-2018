@@ -581,18 +581,18 @@ bool getGenSystem(TClonesArray* branchParticle,
         if (tmpParticle->Status == 22 && tmpParticle->PID == 25) {
             higgs.push_back(tmpParticle->P4());
         } else {//if (tmpParticle->Status == 91) {
-            if (tmpParticle->PID == 5) {
+            if (tmpParticle->PID == 5) {//23
                 bquarks.push_back(tmpParticle->P4());
-                h_status_codes->Fill(tmpParticle->Status, 1);
+                //h_status_codes->Fill(tmpParticle->Status, 1);
             } else if (tmpParticle->PID == -5) {
                 anti_bquarks.push_back(tmpParticle->P4());
-                h_status_codes->Fill(tmpParticle->Status, 1);
+                //h_status_codes->Fill(tmpParticle->Status, 1);
             } else if (tmpParticle->PID == 15) {
                 taus.push_back(tmpParticle->P4());
-                //h_status_codes->Fill(tmpParticle->Status, 1);
+                h_status_codes->Fill(tmpParticle->Status, 1);
             } else if (tmpParticle->PID == -15) {
                 anti_taus.push_back(tmpParticle->P4());
-                //h_status_codes->Fill(tmpParticle->Status, 1);
+                h_status_codes->Fill(tmpParticle->Status, 1);
             }
         }
     }
