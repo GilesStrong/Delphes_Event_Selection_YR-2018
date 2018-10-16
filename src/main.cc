@@ -569,7 +569,7 @@ bool correctDecayChannel(std::string input, Long64_t cEvent,
 bool getGenSystem(TClonesArray* branchParticle,
     TLorentzVector* v_gen_higgs_bb, TLorentzVector* v_gen_higgs_tt,
     TLorentzVector* v_gen_tau_0, TLorentzVector* v_gen_tau_1,
-    TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1) {
+    TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1, TH1D* h_status_codes) {
     /*Simplified version of correctDecayChannel + truthCut designed for filtered Delphes, where mother-daughter links are broken*/
     GenParticle* tmpParticle;
     bool match = false;
@@ -580,15 +580,18 @@ bool getGenSystem(TClonesArray* branchParticle,
         if (tmpParticle->IsPU == true) continue;
         if (tmpParticle->Status == 22 && tmpParticle->PID == 25) {
             higgs.push_back(tmpParticle->P4());
-        } else if (tmpParticle->Status == 91) {
-            if (tmpParticle->PID == 5) {
-                bquarks.push_back(tmpParticle->P4());
-            } else if (tmpParticle->PID == -5) {
-                anti_bquarks.push_back(tmpParticle->P4());
-            } else if (tmpParticle->PID == 15) {
-                taus.push_back(tmpParticle->P4());
-            } else if (tmpParticle->PID == -15) {
-                anti_taus.push_back(tmpParticle->P4());
+        } else {
+            h_status_codes->Fill(tmpParticle->Status, 1);
+            if (tmpParticle->Status == 91) {
+                if (tmpParticle->PID == 5) {
+                    bquarks.push_back(tmpParticle->P4());
+                } else if (tmpParticle->PID == -5) {
+                    anti_bquarks.push_back(tmpParticle->P4());
+                } else if (tmpParticle->PID == 15) {
+                    taus.push_back(tmpParticle->P4());
+                } else if (tmpParticle->PID == -15) {
+                    anti_taus.push_back(tmpParticle->P4());
+                }
             }
         }
     }
@@ -1255,6 +1258,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     TH1D* h_mu_tau_b_b_cutFlow;
     TH1D* h_tau_tau_b_b_cutFlow;
     std::map<std::string, TH1D*> mcTruthPlots;
+    TH1D* h_status_codes = new TH1D("h_status_codes", "status_codes", 110, 0, 110);
     mcTruthPlots.insert(std::make_pair("cuts", new TH1D("mcTruth_cutFlow", "MC Truth Cuts", 20, -2.0, 2.0)));
     mcTruthPlots.insert(std::make_pair("bMatch", new TH1D("mcTruth_bJetMatching", "#DeltaR(b, jet)", 50, 0.0, 0.5)));
     mcTruthPlots.insert(std::make_pair("tauMatch", new TH1D("mcTruth_tauJetMatching", "#DeltaR(#tau, jet)", 50, 0.0, 0.5)));
@@ -1429,7 +1433,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             mPT_pT = tmpMPT->MET;
                             mPT_phi = tmpMPT->Phi;
                             if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
-                                gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
+                                gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1, h_status_codes);
 
                             } else if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
                                 if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
@@ -1600,7 +1604,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
                             if (debug) std::cout << "Accepted e_tau_b_b event\n";
                             if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
-                                gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
+                                gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1, h_status_codes);
 
                             } else if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
                                 if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
@@ -1767,7 +1771,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                 v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
                                 if (debug) std::cout << "Accepted tau_tau_b_b event\n";
                                 if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
-                                    gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
+                                    gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1, h_status_codes);
 
                                 } else if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
                                     if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
@@ -1924,6 +1928,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     mcTruthPlots["higgsDecay"]->GetYaxis()->SetTitle("Events");
     mcTruthPlots["higgsDecay"]->Draw();
     mcTruthPlots["higgsDecay"]->Write();
+    delete c_mcTruth_higgsDecay;
+    TCanvas* c_status_codes = new TCanvas();
+    h_status_codes->GetXaxis()->SetTitle("status_codes");
+    h_status_codes->GetYaxis()->SetTitle("Events");
+    h_status_codes->Draw();
+    h_status_codes->Write();
     delete c_mcTruth_higgsDecay;
     std::cout << "Plots created\n";
     //___________________________________________
