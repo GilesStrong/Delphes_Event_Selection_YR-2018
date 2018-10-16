@@ -577,8 +577,8 @@ bool getGenSystem(TClonesArray* branchParticle,
     std::vector<TLorentzVector> higgs, bquarks, taus, anti_bquarks, anti_taus;
     for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
         tmpParticle = (GenParticle*)branchParticle->At(p);
-        if (tmpParticle->Status != 22 || tmpParticle->IsPU == true) continue;
-        if (tmpParticle->PID == 25) {
+        if (tmpParticle->IsPU == true) continue;
+        if (tmpParticle->Status == 22 && tmpParticle->PID == 25) {
             higgs.push_back(tmpParticle->P4());
         } else if (tmpParticle->PID == 5) {
             bquarks.push_back(tmpParticle->P4());
