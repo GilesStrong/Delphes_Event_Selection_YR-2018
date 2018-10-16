@@ -589,10 +589,10 @@ bool getGenSystem(TClonesArray* branchParticle,
                 h_status_codes->Fill(tmpParticle->Status, 1);
             } else if (tmpParticle->PID == 15) {
                 taus.push_back(tmpParticle->P4());
-                h_status_codes->Fill(tmpParticle->Status, 1);
+                //h_status_codes->Fill(tmpParticle->Status, 1);
             } else if (tmpParticle->PID == -15) {
                 anti_taus.push_back(tmpParticle->P4());
-                h_status_codes->Fill(tmpParticle->Status, 1);
+                //h_status_codes->Fill(tmpParticle->Status, 1);
             }
         }
     }
