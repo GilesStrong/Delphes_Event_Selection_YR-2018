@@ -571,10 +571,10 @@ bool getGenSystem(TClonesArray* branchParticle,
     TLorentzVector* v_gen_tau_0, TLorentzVector* v_gen_tau_1,
     TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1) {
     /*Simplified version of correctDecayChannel + truthCut designed for filtered Delphes, where mother-daughter links are broken*/
-    GenParticle* tmpParticle
+    GenParticle* tmpParticle;
     bool match = false;
 
-    std::vector<TLorentzVector> higgs, bquarks, taus, anti_bquarks, anti_taus
+    std::vector<TLorentzVector> higgs, bquarks, taus, anti_bquarks, anti_taus;
     for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
         tmpParticle = (GenParticle*)branchParticle->At(p)
         if (tmpParticle->Status != 22 || tmpParticle->IsPU == true) continue;
@@ -610,14 +610,14 @@ bool getGenSystem(TClonesArray* branchParticle,
                     dR = sum.DeltaR(higgs[k]);
                     if (dR < min_dR) {
                         min_dR = dR;
-                        v_gen_higgs_tt = higgs[k];
+                        *v_gen_higgs_tt = higgs[k];
                         htt = k;
                         if (i.Pt() > j.Pt()) {
-                            v_gen_tau_0 = i;
-                            v_gen_tau_1 = j;
+                            *v_gen_tau_0 = i;
+                            *v_gen_tau_1 = j;
                         } else {
-                            v_gen_tau_0 = j;
-                            v_gen_tau_1 = i;
+                            *v_gen_tau_0 = j;
+                            *v_gen_tau_1 = i;
                         }
                     }
                 }
@@ -633,20 +633,20 @@ bool getGenSystem(TClonesArray* branchParticle,
                 dR = sum.DeltaR(higgs[1-htt]);
                 if (dR < min_dR) {
                     min_dR = dR;
-                    v_gen_higgs_bb = higgs[1-htt];
+                    *v_gen_higgs_bb = higgs[1-htt];
                     if (i.Pt() > j.Pt()) {
-                        v_gen_bJet_0 = i;
-                        v_gen_bJet_1 = j;
+                        *v_gen_bJet_0 = i;
+                        *v_gen_bJet_1 = j;
                     } else {
-                        v_gen_bJet_0 = j;
-                        v_gen_bJet_1 = i;
+                        *v_gen_bJet_0 = j;
+                        *v_gen_bJet_1 = i;
                     }
                 }
             }
         }
     } else { //Gen-level final-states not all found
-        v_gen_higgs_tt = higgs[0];
-        v_gen_higgs_bb = higgs[1];
+        *v_gen_higgs_tt = higgs[0];
+        *v_gen_higgs_bb = higgs[1];
     }
     return match;
 }
