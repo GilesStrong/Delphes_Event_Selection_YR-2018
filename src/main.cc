@@ -580,17 +580,17 @@ bool getGenSystem(TClonesArray* branchParticle,
         if (tmpParticle->IsPU == true) continue;
         if (tmpParticle->Status == 22 && tmpParticle->PID == 25) {
             higgs.push_back(tmpParticle->P4());
-        } else if (tmpParticle->Status == 23) {
-            if (tmpParticle->PID == 5) {//23
-                bquarks.push_back(tmpParticle->P4());
-            } else if (tmpParticle->PID == -5) {
-                anti_bquarks.push_back(tmpParticle->P4());
-            } else if (tmpParticle->PID == 15) {
-                taus.push_back(tmpParticle->P4());
-            } else if (tmpParticle->PID == -15) {
-                anti_taus.push_back(tmpParticle->P4());
-            }
-        }
+        } // else if (tmpParticle->Status == 23) {
+        //     if (tmpParticle->PID == 5) {//23
+        //         bquarks.push_back(tmpParticle->P4());
+        //     } else if (tmpParticle->PID == -5) {
+        //         anti_bquarks.push_back(tmpParticle->P4());
+        //     } else if (tmpParticle->PID == 15) {
+        //         taus.push_back(tmpParticle->P4());
+        //     } else if (tmpParticle->PID == -15) {
+        //         anti_taus.push_back(tmpParticle->P4());
+        //     }
+        // }
     }
     if (higgs.size() != 2) {
         throw std::runtime_error("Signal doesn't contain exactly 2 status 22 Higgs");
@@ -601,60 +601,61 @@ bool getGenSystem(TClonesArray* branchParticle,
     *v_gen_higgs_bb = higgs[1];
     return false;
 
-    if (taus.size() >= 1 && anti_taus.size() >= 1 && bquarks.size() >= 1 && anti_bquarks.size() >= 1) {
-        match = true;
-        double min_dR = 999, dR;
-        TLorentzVector sum;
-        int htt = 0;
+    //Doesn't work, status 22 appears to be purely rest-frame of di-Higgs
+    // if (taus.size() >= 1 && anti_taus.size() >= 1 && bquarks.size() >= 1 && anti_bquarks.size() >= 1) {
+    //     match = true;
+    //     double min_dR = 999, dR;
+    //     TLorentzVector sum;
+    //     int htt = 0;
 
-    //Match taus to Higgs
-        for (TLorentzVector i : taus) {
-            for (TLorentzVector j : anti_taus) {
-                sum = i+j;
+    // //Match taus to Higgs
+    //     for (TLorentzVector i : taus) {
+    //         for (TLorentzVector j : anti_taus) {
+    //             sum = i+j;
 
-                for (int k = 0; k < 2; k++) {
-                    dR = sum.DeltaR(higgs[k]);
-                    if (dR < min_dR) {
-                        min_dR = dR;
-                        *v_gen_higgs_tt = higgs[k];
-                        htt = k;
-                        if (i.Pt() > j.Pt()) {
-                            *v_gen_tau_0 = i;
-                            *v_gen_tau_1 = j;
-                        } else {
-                            *v_gen_tau_0 = j;
-                            *v_gen_tau_1 = i;
-                        }
-                    }
-                }
-            }
-        }
+    //             for (int k = 0; k < 2; k++) {
+    //                 dR = sum.DeltaR(higgs[k]);
+    //                 if (dR < min_dR) {
+    //                     min_dR = dR;
+    //                     *v_gen_higgs_tt = higgs[k];
+    //                     htt = k;
+    //                     if (i.Pt() > j.Pt()) {
+    //                         *v_gen_tau_0 = i;
+    //                         *v_gen_tau_1 = j;
+    //                     } else {
+    //                         *v_gen_tau_0 = j;
+    //                         *v_gen_tau_1 = i;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        //Match bquarks to Higgs
-        min_dR = 999;
-        for (TLorentzVector i : bquarks) {
-            for (TLorentzVector j : anti_bquarks) {
-                sum = i+j;
+    //     //Match bquarks to Higgs
+    //     min_dR = 999;
+    //     for (TLorentzVector i : bquarks) {
+    //         for (TLorentzVector j : anti_bquarks) {
+    //             sum = i+j;
 
-                dR = sum.DeltaR(higgs[1-htt]);
-                if (dR < min_dR) {
-                    min_dR = dR;
-                    *v_gen_higgs_bb = higgs[1-htt];
-                    if (i.Pt() > j.Pt()) {
-                        *v_gen_bJet_0 = i;
-                        *v_gen_bJet_1 = j;
-                    } else {
-                        *v_gen_bJet_0 = j;
-                        *v_gen_bJet_1 = i;
-                    }
-                }
-            }
-        }
-    } else { //Gen-level final-states not all found
-        *v_gen_higgs_tt = higgs[0];
-        *v_gen_higgs_bb = higgs[1];
-    }
-    return match;
+    //             dR = sum.DeltaR(higgs[1-htt]);
+    //             if (dR < min_dR) {
+    //                 min_dR = dR;
+    //                 *v_gen_higgs_bb = higgs[1-htt];
+    //                 if (i.Pt() > j.Pt()) {
+    //                     *v_gen_bJet_0 = i;
+    //                     *v_gen_bJet_1 = j;
+    //                 } else {
+    //                     *v_gen_bJet_0 = j;
+    //                     *v_gen_bJet_1 = i;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // } else { //Gen-level final-states not all found
+    //     *v_gen_higgs_tt = higgs[0];
+    //     *v_gen_higgs_bb = higgs[1];
+    // }
+    // return match;
 }
     
 
