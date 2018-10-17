@@ -597,6 +597,10 @@ bool getGenSystem(TClonesArray* branchParticle,
         return false;
     }
 
+    *v_gen_higgs_tt = higgs[0];
+    *v_gen_higgs_bb = higgs[1];
+    return false;
+
     if (taus.size() >= 1 && anti_taus.size() >= 1 && bquarks.size() >= 1 && anti_bquarks.size() >= 1) {
         match = true;
         double min_dR = 999, dR;
