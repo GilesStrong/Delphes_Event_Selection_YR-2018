@@ -36,6 +36,7 @@
 #include "RtypesCore.h"
 #include "TString.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TNtuple.h"
 #include "TCanvas.h"
 #include "TVector3.h"

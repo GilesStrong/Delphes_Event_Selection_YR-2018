@@ -946,7 +946,7 @@ double functionGF(double kl, double kt, double c2, double cg, double c2g, std::a
     return ( A[0]*pow(kt,4) + A[1]*pow(c2,2) + (A[2]*pow(kt,2) + A[3]*pow(cg,2))*pow(kl,2) + A[4]*pow(c2g,2) + ( A[5]*c2 + A[6]*kt*kl )*pow(kt,2) + (A[7]*kt*kl + A[8]*cg*kl )*c2 + A[9]*c2*c2g + (A[10]*cg*kl + A[11]*c2g)*pow(kt,2)+ (A[12]*kl*cg + A[13]*c2g )*kt*kl + A[14]*cg*c2g*kl );
 }
 
-pair<int,int> get_bin_idx(double x, double y, TH2* histo)
+std::pair<int,int> get_bin_idx(double x, double y, TH2* histo)
 {
     int ix = histo->GetXaxis()->FindBin(x);
     int iy = histo->GetYaxis()->FindBin(y);
@@ -1400,7 +1400,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     for (uint idx = 0; idx < n_Ai_coeffs; ++idx)
     {
         int Ai = idx + 1; // there is a naming shift, first coefficient is A1, second is A2 etc...
-        string hName = string("A") + std::to_string(Ai) + string("_14TeV");
+        std::string hName = string("A") + std::to_string(Ai) + string("_14TeV");
         TH2D* h = (TH2D*) f_14TeV_coeffs->Get(hName.c_str());
         histos_A.at(idx) = h;
     }
