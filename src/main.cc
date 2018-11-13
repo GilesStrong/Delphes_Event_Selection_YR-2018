@@ -21,6 +21,28 @@ std::map<int, double> tauFakeFactor14 = {{21, 0.52}, {32, 1.00}, {54, 2.41}};
 
 std::map<int, double>  mvaFakeFactorReduction = {{21, 3.0}, {32, 2.0}, {54, 2.0}};
 
+std::array<double, n_Ai_coeffs> A_integralXS = {
+        2.100318379,
+        10.2,
+        0.287259045,
+        0.098882779,
+        1.321736614,
+        -8.42431259,
+        -1.388017366,
+        2.8,
+        0.518124457,
+        -2.163473227,
+        -0.550668596,
+        5.871490593,
+        0.296671491,
+        -1.172793054,
+        0.653429812
+    };
+
+int klambda_min = -5;
+int klambda_max = 10;
+double klambda_res = 0.25;
+
 double getFakeRate(double pt, double eta) {
     double fakerate = (-8.33753e-03)
                      +((1.48065e-03)*pt)
@@ -915,6 +937,26 @@ bool truthCut(std::string input, Long64_t cEvent, int b_0, int b_1, int l_0, int
     return true;
 }
 
+double functionGF(double kl, double kt, double c2, double cg, double c2g, std::array<double, n_Ai_coeffs> const &A)
+{
+    // this can be extended to 5D coefficients; currently c2, cg, c2g are unused
+    // return ( A1*pow(kt,4) + A3*pow(kt,2)*pow(kl,2) + A7*kl*pow(kt,3) );
+    return ( A[0]*pow(kt,4) + A[1]*pow(c2,2) + (A[2]*pow(kt,2) + A[3]*pow(cg,2))*pow(kl,2) + A[4]*pow(c2g,2) + ( A[5]*c2 + A[6]*kt*kl )*pow(kt,2) + (A[7]*kt*kl + A[8]*cg*kl )*c2 + A[9]*c2*c2g + (A[10]*cg*kl + A[11]*c2g)*pow(kt,2)+ (A[12]*kl*cg + A[13]*c2g )*kt*kl + A[14]*cg*c2g*kl );
+}
+
+pair<int,int> get_bin_idx(double x, double y, TH2* histo)
+{
+    int ix = histo->GetXaxis()->FindBin(x);
+    int iy = histo->GetYaxis()->FindBin(y);
+    if (ix < 1) ix = 1;
+    if (iy < 1) iy = 1;
+    if (ix > histo->GetNbinsX()) ix = histo->GetNbinsX();
+    if (iy > histo->GetNbinsY()) iy = histo->GetNbinsY();
+    return make_pair(ix,iy);
+}
+
+
+
 
 int main(int argc, char *argv[]) { //input, output, N events, truth
     std::map<std::string, std::string> options = getOptions(argc, argv);
@@ -964,6 +1006,9 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     double gen_h_tt_pT, gen_h_tt_eta, gen_h_tt_phi, gen_h_tt_E; //Higgs->tau tau variables
     bool gen_mctMatch; //MC truth match
     double gen_cosThetaStar;
+    //___________________________________________
+    //klambda reweighting________________________
+    std::vector<double> gen_weight_klambda;
     //___________________________________________
     double weight; //Event weight
     int hBB = -1, hTauTau = -1;
@@ -1063,6 +1108,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     e_tau_b_b->Branch("gen_mctMatch", &gen_mctMatch);
     e_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
     e_tau_b_b->Branch("gen_weight", &weight);
+    e_tau_b_b->Branch("gen_weight_klambda", &gen_weight_klambda);
     TTree* mu_tau_b_b = new TTree("mu_tau_b_b", "#mu #tau_{h} b #bar{b}");
     mu_tau_b_b->Branch("t_0_pT", &t_0_pT);
     mu_tau_b_b->Branch("t_0_eta", &t_0_eta);
@@ -1157,6 +1203,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     mu_tau_b_b->Branch("gen_mctMatch", &gen_mctMatch);
     mu_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
     mu_tau_b_b->Branch("gen_weight", &weight);
+    mu_tau_b_b->Branch("gen_weight_klambda", &gen_weight_klambda);
     TTree* tau_tau_b_b = new TTree("tau_tau_b_b", "#tau_{h} #tau_{h} b #bar{b}");
     tau_tau_b_b->Branch("t_0_pT", &t_0_pT);
     tau_tau_b_b->Branch("t_0_eta", &t_0_eta);
@@ -1251,11 +1298,13 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     tau_tau_b_b->Branch("gen_mctMatch", &gen_mctMatch);
     tau_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
     tau_tau_b_b->Branch("gen_weight", &weight);
+    tau_tau_b_b->Branch("gen_weight_klambda", &gen_weight_klambda);
     std::cout << "Variables initialised\n";
     //___________________________________________
     //Initialise plots___________________________
     std::cout << "Initialising plot\n";
     TH1D* h_datasetSizes = new TH1D("Dataset_sizes", "Dataset sizes", 4, -0.4, 0.4);
+    TH1D* h_sum_w = new TH1D("Sum_w", "Sum klambda weights / ", 1+((klambda_max-klambda_min)/klambda_res), klambda_min, klambda_max+klambda_res);
     TH1D* h_e_tau_b_b_cutFlow;
     TH1D* h_mu_tau_b_b_cutFlow;
     TH1D* h_tau_tau_b_b_cutFlow;
@@ -1342,6 +1391,21 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     MissingET* tmpMPT;
     Weight* tmpWeight;
     std::vector<bool> tauTags;
+
+    // read out the Ai histogram coefficients
+    TFile* f_14TeV_coeffs = new TFile("Coefficients_14TeV.root");
+    std::array<TH2*,n_Ai_coeffs> histos_A;
+    for (uint idx = 0; idx < n_Ai_coeffs; ++idx)
+    {
+        int Ai = idx + 1; // there is a naming shift, first coefficient is A1, second is A2 etc...
+        string hName = string("A") + std::to_string(Ai) + string("_14TeV");
+        TH2D* h = (TH2D*) f_14TeV_coeffs->Get(hName.c_str());
+        histos_A.at(idx) = h;
+    }
+    TFile* f_HH_14TeV_histo = new TFile("HH_SM_2D_histo.root"); // done from the same tree as the HH_ME_info.root, but kept here for an easy usage
+    TH2* HH_14TeV_histo = (TH2*) f_HH_14TeV_histo->Get("h_events_SM");
+
+
     std::cout << "Beginning event loop\n";
     for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
         if (debug) std::cout << "Loading event " << cEvent << "\n";
@@ -1361,6 +1425,33 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
         hTauTau = -1;
         gen_mctMatch = false;
         TLorentzVector v_gen_higgs_bb, v_gen_higgs_tt, v_gen_diHiggs, v_gen_tau_0, v_gen_tau_1, v_gen_bJet_0, v_gen_bJet_1;
+
+        //klambda weights
+        if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
+            //Gen system
+            gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
+            v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
+            gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
+            gen_diH_mass = v_gen_diHiggs.M();
+
+            //Binning
+            auto bins = get_bin_idx(gen_diH_mass, std::abs(gen_cosThetaStar), histos_A.at(0));
+            std::array<double,n_Ai_coeffs> values_A;
+            for (uint idx = 0; idx < n_Ai_coeffs; ++idx)
+            {
+                values_A.at(idx) = histos_A.at(idx)->GetBinContent(bins.first, bins.second); // read the 2D bin content for these mHH, costh values
+                values_A.at(idx) = A_integralXS.at(idx)*values_A.at(idx);
+            }
+
+            double w
+            double SM_evts = HH_14TeV_histo->GetBinContent(bins.first, bins.second);
+            for (double kl = klambda_min; kl < klambda_max+klambda_res; kl += klambda_res) {
+                w = functionGF(kl, 1, 0, 0, 0, values_A)/SM_evts;
+                gen_weight_klambda.push_back(w);
+                h_sum_w->Fill(kl, w)
+            }       
+        }
+
         //Check for mu tau b b finalstates___
         h_mu_tau_b_b_cutFlow->Fill("All", 1);
         finalstateSet("mu_tau_b_b");
@@ -1433,10 +1524,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             if (debug) std::cout << "Accepted mu_tau_b_b event\n";
                             mPT_pT = tmpMPT->MET;
                             mPT_phi = tmpMPT->Phi;
-                            if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
-                                gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
-
-                            } else if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
+                            if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
                                 if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
                                     gen_mctMatch = truthCut(options["-i"], cEvent, bJet_0, bJet_1, //Checks final-state selection was correct
                                                         taus[0], muons[0], hBB, hTauTau, {"tau", "muon"},
@@ -1444,7 +1532,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                                         &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
                                 }
                             }
-                            v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
                             gen_t_0_pT = v_gen_tau_0.Pt();
                             gen_t_0_eta = v_gen_tau_0.Eta();
                             gen_t_0_phi = v_gen_tau_0.Phi();
@@ -1465,7 +1552,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             gen_diH_eta = v_gen_diHiggs.Eta();
                             gen_diH_phi = v_gen_diHiggs.Phi();
                             gen_diH_E = v_gen_diHiggs.E();
-                            gen_diH_mass = v_gen_diHiggs.M();
                             gen_h_bb_pT = v_gen_higgs_bb.Pt();
                             gen_h_bb_eta = v_gen_higgs_bb.Eta();
                             gen_h_bb_phi = v_gen_higgs_bb.Phi();
@@ -1474,7 +1560,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             gen_h_tt_eta = v_gen_higgs_tt.Eta();
                             gen_h_tt_phi = v_gen_higgs_tt.Phi();
                             gen_h_tt_E = v_gen_higgs_tt.E();
-                            gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
                             t_0_pT = v_tau_0.Pt();
                             t_0_eta = v_tau_0.Eta();
                             t_0_phi = v_tau_0.Phi();
@@ -1604,10 +1689,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
                             v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
                             if (debug) std::cout << "Accepted e_tau_b_b event\n";
-                            if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
-                                gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
-
-                            } else if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
+                            if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
                                 if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
                                     gen_mctMatch = truthCut(options["-i"], cEvent, bJet_0, bJet_1, //Checks final-state selection was correct
                                                         taus[0], electrons[0], hBB, hTauTau, {"tau", "electon"},
@@ -1615,7 +1697,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                                         &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
                                 }
                             }
-                            v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
                             gen_t_0_pT = v_gen_tau_0.Pt();
                             gen_t_0_eta = v_gen_tau_0.Eta();
                             gen_t_0_phi = v_gen_tau_0.Phi();
@@ -1636,7 +1717,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             gen_diH_eta = v_gen_diHiggs.Eta();
                             gen_diH_phi = v_gen_diHiggs.Phi();
                             gen_diH_E = v_gen_diHiggs.E();
-                            gen_diH_mass = v_gen_diHiggs.M();
                             gen_h_bb_pT = v_gen_higgs_bb.Pt();
                             gen_h_bb_eta = v_gen_higgs_bb.Eta();
                             gen_h_bb_phi = v_gen_higgs_bb.Phi();
@@ -1645,7 +1725,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             gen_h_tt_eta = v_gen_higgs_tt.Eta();
                             gen_h_tt_phi = v_gen_higgs_tt.Phi();
                             gen_h_tt_E = v_gen_higgs_tt.E();
-                            gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
                             mPT_pT = tmpMPT->MET;
                             mPT_phi = tmpMPT->Phi;
                             t_0_pT = v_tau_0.Pt();
@@ -1771,10 +1850,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                 v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
                                 v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
                                 if (debug) std::cout << "Accepted tau_tau_b_b event\n";
-                                if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
-                                    gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
-
-                                } else if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
+                                if (options["-i"].find("MG5_pp_hh_13TeV_10M_py8_Forced") != std::string::npos) { //13TeV Signal
                                     if (correctDecayChannel(options["-i"], cEvent, &mcTruthPlots, &hBB, &hTauTau)) {
                                     gen_mctMatch = truthCut(options["-i"], cEvent, bJet_0, bJet_1, //Checks final-state selection was correct
                                                         tau_0, tau_1, hBB, hTauTau, {"tau", "tau"},
@@ -1782,7 +1858,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                                         &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
                                     }
                                 }
-                                v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
                                 gen_t_0_pT = v_gen_tau_0.Pt();
                                 gen_t_0_eta = v_gen_tau_0.Eta();
                                 gen_t_0_phi = v_gen_tau_0.Phi();
@@ -1803,7 +1878,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                 gen_diH_eta = v_gen_diHiggs.Eta();
                                 gen_diH_phi = v_gen_diHiggs.Phi();
                                 gen_diH_E = v_gen_diHiggs.E();
-                                gen_diH_mass = v_gen_diHiggs.M();
                                 gen_h_bb_pT = v_gen_higgs_bb.Pt();
                                 gen_h_bb_eta = v_gen_higgs_bb.Eta();
                                 gen_h_bb_phi = v_gen_higgs_bb.Phi();
@@ -1812,7 +1886,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                 gen_h_tt_eta = v_gen_higgs_tt.Eta();
                                 gen_h_tt_phi = v_gen_higgs_tt.Phi();
                                 gen_h_tt_E = v_gen_higgs_tt.E();
-                                gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
                                 mPT_pT = tmpMPT->MET;
                                 mPT_phi = tmpMPT->Phi;
                                 t_0_pT = v_tau_0.Pt();
