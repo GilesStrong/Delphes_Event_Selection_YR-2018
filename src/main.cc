@@ -1397,7 +1397,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     for (uint idx = 0; idx < n_Ai_coeffs; ++idx)
     {
         int Ai = idx + 1; // there is a naming shift, first coefficient is A1, second is A2 etc...
-        std::string hName = string("A") + std::to_string(Ai) + string("_14TeV");
+        std::string hName = std::string("A") + std::to_string(Ai) + std::string("_14TeV");
         TH2D* h = (TH2D*) f_14TeV_coeffs->Get(hName.c_str());
         histos_A.at(idx) = h;
     }
