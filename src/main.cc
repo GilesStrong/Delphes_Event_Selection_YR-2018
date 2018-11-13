@@ -21,6 +21,8 @@ std::map<int, double> tauFakeFactor14 = {{21, 0.52}, {32, 1.00}, {54, 2.41}};
 
 std::map<int, double>  mvaFakeFactorReduction = {{21, 3.0}, {32, 2.0}, {54, 2.0}};
 
+#define n_Ai_coeffs 15
+
 std::array<double, n_Ai_coeffs> A_integralXS = {
         2.100318379,
         10.2,
