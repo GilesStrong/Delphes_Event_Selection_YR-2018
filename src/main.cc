@@ -2003,6 +2003,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     mcTruthPlots["higgsDecay"]->Draw();
     mcTruthPlots["higgsDecay"]->Write();
     delete c_mcTruth_higgsDecay;
+    TCanvas* c_sum_w = new TCanvas();
+    h_sum_w->GetXaxis()->SetTitle("$#kapa_#lambda$");
+    h_sum_w->GetYaxis()->SetTitle("$#Sigma(w/sm_evts)$");
+    h_sum_w->Draw();
+    h_sum_w->Write();
+    delete c_sum_w;
     std::cout << "Plots created\n";
     //___________________________________________
     //Save datasets______________________________
