@@ -954,11 +954,8 @@ std::pair<int,int> get_bin_idx(double x, double y, TH2* histo)
     if (iy < 1) iy = 1;
     if (ix > histo->GetNbinsX()) ix = histo->GetNbinsX();
     if (iy > histo->GetNbinsY()) iy = histo->GetNbinsY();
-    return make_pair(ix,iy);
+    return std::make_pair(ix,iy);
 }
-
-
-
 
 int main(int argc, char *argv[]) { //input, output, N events, truth
     std::map<std::string, std::string> options = getOptions(argc, argv);
@@ -1445,12 +1442,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                 values_A.at(idx) = A_integralXS.at(idx)*values_A.at(idx);
             }
 
-            double w
+            double w;
             double SM_evts = HH_14TeV_histo->GetBinContent(bins.first, bins.second);
             for (double kl = klambda_min; kl < klambda_max+klambda_res; kl += klambda_res) {
                 w = functionGF(kl, 1, 0, 0, 0, values_A)/SM_evts;
                 gen_weight_klambda.push_back(w);
-                h_sum_w->Fill(kl, w)
+                h_sum_w->Fill(kl, w);
             }       
         }
 
