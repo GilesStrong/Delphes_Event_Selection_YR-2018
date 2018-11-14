@@ -979,8 +979,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
         TH2D* h = (TH2D*) f_14TeV_coeffs->Get(hName.c_str());
         histos_A.at(idx) = h;
     }
+    f_14TeV_coeffs->Close();
     TFile* f_HH_14TeV_histo = new TFile("HH_SM_2D_histo.root"); // done from the same tree as the HH_ME_info.root, but kept here for an easy usage
     TH2* HH_14TeV_histo = (TH2*) f_HH_14TeV_histo->Get("h_events_SM");
+    f_HH_14TeV_histo->Close();
     //Build output files_________________________
     std::string outputName(options["-o"]);
     makeDirs(outputName);
