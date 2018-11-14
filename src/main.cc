@@ -964,6 +964,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     }
     std::string outputName(options["-o"]);
     makeDirs(outputName);
+    TFile* outputFile = new TFile((outputName + ".root").c_str(), "recreate");
+    outputFile->cd();
     //ROOT settings______________________________
     gSystem->Load("libDelphes.so");
     gStyle->SetOptStat(0);
@@ -1948,8 +1950,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     std::cout << "Event loop complete\n";
     //___________________________________________
     //Writing plots______________________________
-    TFile* outputFile = new TFile((outputName + ".root").c_str(), "recreate");
-    outputFile->cd();
     std::cout << "Creating plots\n";
     TCanvas* c_datasetSizes = new TCanvas();
     c_datasetSizes->SetLogy();
