@@ -1430,7 +1430,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
             //Gen system
             gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
             v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
-            gen_cosThetaStar = std:abs(v_gen_higgs_bb.CosTheta());
+            gen_cosThetaStar = std::abs(v_gen_higgs_bb.CosTheta());
             gen_diH_mass = v_gen_diHiggs.M();
 
             //Binning
