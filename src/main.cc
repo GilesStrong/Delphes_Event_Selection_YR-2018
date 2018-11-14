@@ -962,10 +962,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     if (options.size() == 0) {
         return 1;
     }
-    std::string outputName(options["-o"]);
-    makeDirs(outputName);
-    TFile* outputFile = new TFile((outputName + ".root").c_str(), "recreate");
-    outputFile->cd();
     //ROOT settings______________________________
     gSystem->Load("libDelphes.so");
     gStyle->SetOptStat(0);
@@ -973,6 +969,23 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     gStyle->SetPadGridX(kFALSE);
     gStyle->SetPadGridY(kFALSE);
     //___________________________________________
+    // read out the Ai histogram coefficients____
+    TFile* f_14TeV_coeffs = new TFile("Coefficients_14TeV.root");
+    std::array<TH2*,n_Ai_coeffs> histos_A;
+    for (uint idx = 0; idx < n_Ai_coeffs; ++idx)
+    {
+        int Ai = idx + 1; // there is a naming shift, first coefficient is A1, second is A2 etc...
+        std::string hName = std::string("A") + std::to_string(Ai) + std::string("_14TeV");
+        TH2D* h = (TH2D*) f_14TeV_coeffs->Get(hName.c_str());
+        histos_A.at(idx) = h;
+    }
+    TFile* f_HH_14TeV_histo = new TFile("HH_SM_2D_histo.root"); // done from the same tree as the HH_ME_info.root, but kept here for an easy usage
+    TH2* HH_14TeV_histo = (TH2*) f_HH_14TeV_histo->Get("h_events_SM");
+    //Build output files_________________________
+    std::string outputName(options["-o"]);
+    makeDirs(outputName);
+    TFile* outputFile = new TFile((outputName + ".root").c_str(), "recreate");
+    outputFile->cd();
     //Initialise variables_______________________
     std::cout << "Initialising variables\n";
     int lepton_0, lepton_1, tau_0, tau_1, bJet_0, bJet_1;
@@ -1392,20 +1405,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     MissingET* tmpMPT;
     Weight* tmpWeight;
     std::vector<bool> tauTags;
-
-    // read out the Ai histogram coefficients
-    TFile* f_14TeV_coeffs = new TFile("Coefficients_14TeV.root");
-    std::array<TH2*,n_Ai_coeffs> histos_A;
-    for (uint idx = 0; idx < n_Ai_coeffs; ++idx)
-    {
-        int Ai = idx + 1; // there is a naming shift, first coefficient is A1, second is A2 etc...
-        std::string hName = std::string("A") + std::to_string(Ai) + std::string("_14TeV");
-        TH2D* h = (TH2D*) f_14TeV_coeffs->Get(hName.c_str());
-        histos_A.at(idx) = h;
-    }
-    TFile* f_HH_14TeV_histo = new TFile("HH_SM_2D_histo.root"); // done from the same tree as the HH_ME_info.root, but kept here for an easy usage
-    TH2* HH_14TeV_histo = (TH2*) f_HH_14TeV_histo->Get("h_events_SM");
-
 
     std::cout << "Beginning event loop\n";
     for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
