@@ -1303,7 +1303,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     //Initialise plots___________________________
     std::cout << "Initialising plot\n";
     TH1D* h_datasetSizes = new TH1D("Dataset_sizes", "Dataset sizes", 4, -0.4, 0.4);
-    TH1D* h_sum_w = new TH1D("Sum_w", "Sum klambda weights / ", 1+((klambda_max-klambda_min)/klambda_res), klambda_min, klambda_max+klambda_res);
+    TH1D* h_sum_w = new TH1D("Sum_w", "Sum klambda weights / SM_Evts", 1+((klambda_max-klambda_min)/klambda_res), klambda_min, klambda_max+klambda_res);
     TH1D* h_e_tau_b_b_cutFlow;
     TH1D* h_mu_tau_b_b_cutFlow;
     TH1D* h_tau_tau_b_b_cutFlow;
@@ -1430,7 +1430,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
             //Gen system
             gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
             v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
-            gen_cosThetaStar = v_gen_higgs_bb.CosTheta();
+            gen_cosThetaStar = std:abs(v_gen_higgs_bb.CosTheta());
             gen_diH_mass = v_gen_diHiggs.M();
 
             //Binning
@@ -2004,8 +2004,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     mcTruthPlots["higgsDecay"]->Write();
     delete c_mcTruth_higgsDecay;
     TCanvas* c_sum_w = new TCanvas();
-    h_sum_w->GetXaxis()->SetTitle("$#kapa_#lambda$");
-    h_sum_w->GetYaxis()->SetTitle("$#Sigma(w/sm_evts)$");
+    h_sum_w->GetXaxis()->SetTitle("#kapa_#lambda");
+    h_sum_w->GetYaxis()->SetTitle("#Sigma(w/sm_evts)");
     h_sum_w->Draw();
     h_sum_w->Write();
     delete c_sum_w;
