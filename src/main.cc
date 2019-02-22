@@ -2027,5 +2027,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     delete h_e_tau_b_b_cutFlow;
     delete h_mu_tau_b_b_cutFlow;
     delete h_tau_tau_b_b_cutFlow;
+    delete HH_14TeV_histo;
     //___________________________________________
 }
