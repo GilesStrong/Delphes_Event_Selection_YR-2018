@@ -29,6 +29,9 @@ double higgsMassMax = 160; //GeV
 
 int tauWP = 54;
 bool useMVATaus = true;
+double bjet_matching_dR = 0.4;
+double electon_matching_dR = 0.4;
+double muon_matching_dR = 0.4;
 
 void finalstateSet(std::string set) {
 	if (set == "e_tau_b_b") {
