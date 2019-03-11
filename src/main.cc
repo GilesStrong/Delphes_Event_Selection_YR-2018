@@ -46,7 +46,7 @@ int klambda_max = 10;
 double klambda_res = 0.25;
 
 double get_scale(double pT, double eta, TH2* scales) {
-    return scales->GetBinContent(scales->GetXaxis()->FindBin(x), scales->GetYaxis()->FindBin(y));
+    return scales->GetBinContent(scales->GetXaxis()->FindBin(pT), scales->GetYaxis()->FindBin(eta));
 }
 
 double sascha_tau_fake_rate(double pt, double eta) {
