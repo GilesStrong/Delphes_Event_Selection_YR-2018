@@ -1,4 +1,4 @@
-#/bin/python
+#!/bin/python
 '''Giles Strong (giles.strong@outlook.com)'''
 
 from __future__ import division
@@ -19,7 +19,7 @@ def makeJOFile(inputFile, uid, opts):
 
     joName = "analysis_" + str(uid) + ".sh"
     joFile = open(joName, "w")
-    joFile.write("#/bin/sh\n")
+    joFile.write("#!/bin/sh\n")
     joFile.write("echo Beginning\ job\n")
     joFile.write("export HOME=/afs/cern.ch/user/g/gstrong/\n")
     joFile.write("source /cvmfs/sft.cern.ch/lcg/views/LCG_87/x86_64-slc6-gcc49-opt/setup.sh\n")
