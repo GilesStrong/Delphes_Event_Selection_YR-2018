@@ -1,3 +1,4 @@
+#/bin/python
 '''Giles Strong (giles.strong@outlook.com)'''
 
 from __future__ import division
@@ -16,8 +17,9 @@ def makeJOFile(inputFile, uid, opts):
     cmd += " -o " + outputFile
     cmd += " -d " + str(opts.debug)
 
-    joName = "analysis_" + str(uid) + ".job"
+    joName = "analysis_" + str(uid) + ".sh"
     joFile = open(joName, "w")
+    joFile.write("#/bin/sh\n")
     joFile.write("echo Beginning\ job\n")
     joFile.write("export HOME=/afs/cern.ch/user/g/gstrong/\n")
     joFile.write("source /cvmfs/sft.cern.ch/lcg/views/LCG_87/x86_64-slc6-gcc49-opt/setup.sh\n")
@@ -29,16 +31,28 @@ def makeJOFile(inputFile, uid, opts):
     joFile.write(cmd + "\n")
     joFile.close()
 
-    sub = "bsub -q " + opts.queue + " " + joName
+    subName = "analysis_" + str(uid) + ".sub"
+    subFile = open(subName, "w")
+    subFile.write("exectuable = " + "analysis_" + str(uid) + ".sh\n")
+    subFile.write("output = " + "analysis_" + str(uid) + ".out\n")
+    subFile.write("error = " + "analysis_" + str(uid) + ".err\n")
+    subFile.write("log = " + "analysis_" + str(uid) + ".log\n") 
+    subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')  
+    subFile.write("queue 1")
+    subFile.write("JobFlavour = " + opts.queue + "\n")
+    subFile.close()
+
+    sub = "condor_submit " + subName
     print "Submitting: " + sub
     os.system("chmod 744 " + joName)
+    os.system("chmod 744 " + subName)
     os.system(sub)
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = __doc__)
     parser.add_option("-s", "--sample", dest = "sample", action = "store", help = "Sample to analyse")
     parser.add_option("-d", "--debug", dest = "debug", action = "store", default = 0, help = "Run in debug mode. {0,1}, default: 0")
-    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = "8nh", help = "Queue to run jobs. Default: normal")
+    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = "workday", help = "Queue to run jobs. Default: normal")
     parser.add_option("-f", "--first", dest = "first", action = "store", default = 0, help = "First job to run. Default: 0")
     opts, args = parser.parse_args()
 
@@ -49,9 +63,9 @@ if __name__ == "__main__":
         files = signalFiles
         loc = signalLoc
 
-    elif opts.sample == "ttbar":
+    elif opts.sample == "":
         loc = ttbarLoc
-        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+        filesttbar = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
         
     elif opts.sample == "ttbar_DiLepton":
         files = ttbar_DiLeptonFiles
