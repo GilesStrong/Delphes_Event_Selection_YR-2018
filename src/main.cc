@@ -122,11 +122,11 @@ std::vector<bool> tagTaus(TClonesArray* jets) {
 
 std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, double dR=0.4) {
     /*Match b-quarks to jets*/
-    std::vector<TLorentzVector> gen_electrons;
+    std::vector<TLorentzVector> gen_bquarks;
     GenParticle* tmpParticle;
-    for (int i=0; i < gen_particles->GetEntires(); i++) {
+    for (int i=0; i < gen_particles->GetEntries(); i++) {
         tmpParticle = (GenParticle*)gen_particles->At(i);
-        if std::abs(tmpParticle->PID()) == 11 gen_electrons.push_back((TLorentzVector)tmpParticle->P4());
+        if (std::abs(tmpParticle->PID()) == 5) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
     }
 
     std::vector<bool> real;
@@ -135,7 +135,7 @@ std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, dou
     for (int i = 0; i < jets->GetEntries(); i++) { //Loop through jets
         tmpJet = (Jet*) jets->At(i);
         fake = true;
-        for (TLorentzVector bquark : bquarks) {
+        for (TLorentzVector bquark : gen_bquarks) {
             if (bquark.DeltaR(tmpJet->P4()) < dR) {
                 fake = false;
                 break;
@@ -1044,7 +1044,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     double gen_h_bb_pT, gen_h_bb_eta, gen_h_bb_phi, gen_h_bb_E; //Higgs->bb variables
     double gen_h_tt_pT, gen_h_tt_eta, gen_h_tt_phi, gen_h_tt_E; //Higgs->tau tau variables
     bool gen_mctMatch; //MC truth matc
-    bool gen_t_0_real, gen_t_1_real, gen_b_0_real, gen_b_1_real //Real/fake jets
+    bool gen_t_0_real, gen_t_1_real, gen_b_0_real, gen_b_1_real; //Real/fake jets
     double gen_cosThetaStar;
     //___________________________________________
     //klambda reweighting________________________
