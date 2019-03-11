@@ -126,7 +126,7 @@ std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, dou
     GenParticle* tmpParticle;
     for (int i=0; i < gen_particles->GetEntries(); i++) {
         tmpParticle = (GenParticle*)gen_particles->At(i);
-        if (std::abs(tmpParticle->PID == 5) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
+        if (std::abs(tmpParticle->PID == 5)) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
     }
 
     std::vector<bool> real;
