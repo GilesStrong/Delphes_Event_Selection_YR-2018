@@ -122,13 +122,14 @@ std::vector<bool> tagTaus(TClonesArray* jets) {
 
 std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, double dR=0.4) {
     /*Match b-quarks to jets*/
+    if (debug) std::cout << "Checking b jets\n";
     std::vector<TLorentzVector> gen_bquarks;
     GenParticle* tmpParticle;
     for (int i=0; i < gen_particles->GetEntries(); i++) {
         tmpParticle = (GenParticle*)gen_particles->At(i);
         if (std::abs(tmpParticle->PID == 5)) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
     }
-
+    if (debug) std::cout << gen_bquarks.size() << "  bquarks found\n";    
     std::vector<bool> real;
     Jet* tmpJet;
     bool fake = true;
@@ -138,9 +139,11 @@ std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, dou
         for (TLorentzVector bquark : gen_bquarks) {
             if (bquark.DeltaR(tmpJet->P4()) < dR) {
                 fake = false;
+                if (debug) std::cout << "b jet real\n";
                 break;
             }
         }
+        real.push_back(fake);
     }
     return real;
 }
