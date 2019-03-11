@@ -33,7 +33,7 @@ def makeJOFile(inputFile, uid, opts):
 
     subName = "analysis_" + str(uid) + ".sub"
     subFile = open(subName, "w")
-    subFile.write("exectuable = " + "analysis_" + str(uid) + ".sh\n")
+    subFile.write("executable = " + "analysis_" + str(uid) + ".sh\n")
     subFile.write("output = " + "analysis_" + str(uid) + ".out\n")
     subFile.write("error = " + "analysis_" + str(uid) + ".err\n")
     subFile.write("log = " + "analysis_" + str(uid) + ".log\n") 
