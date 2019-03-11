@@ -38,7 +38,7 @@ def makeJOFile(inputFile, uid, opts):
     subFile.write("error = " + "analysis_" + str(uid) + ".err\n")
     subFile.write("log = " + "analysis_" + str(uid) + ".log\n") 
     subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')  
-    subFile.write("queue 1")
+    subFile.write("queue 1\n")
     subFile.write("JobFlavour = " + opts.queue + "\n")
     subFile.close()
 
