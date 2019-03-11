@@ -130,22 +130,23 @@ std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, dou
         if (std::abs(tmpParticle->PID == 5)) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
     }
     if (debug) std::cout << gen_bquarks.size() << "  bquarks found\n";    
-    std::vector<bool> real;
+    std::vector<bool> bjet_real;
     Jet* tmpJet;
-    bool fake = true;
+    bool real = false;
     for (int i = 0; i < jets->GetEntries(); i++) { //Loop through jets
         tmpJet = (Jet*) jets->At(i);
-        fake = true;
+        real = false;
         for (TLorentzVector bquark : gen_bquarks) {
             if (bquark.DeltaR(tmpJet->P4()) < dR) {
-                fake = false;
+                real = true;
                 if (debug) std::cout << "b jet real\n";
                 break;
             }
         }
-        real.push_back(fake);
+        if (debug) std::cout << "b jet real? " << real;
+        bjet_real.push_back(real);
     }
-    return real;
+    return bjet_real;
 }
 
 double getMT2(TLorentzVector lepton1_p4, TLorentzVector lepton2_p4,
@@ -1555,6 +1556,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                     if (bJets.size() >= 2) {//Quality b jets pairs found
                         h_mu_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
                         if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
+                            if (debug) std::cout << "Accepting event\n";
                             v_tau_1 = tmpMuon->P4();
                             gen_t_1_real = true;
                             tmpJet = (Jet*)branchJet->At(taus[0]);
@@ -1726,6 +1728,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                     if (bJets.size() >= 2) {//Quality b jets pairs found
                         h_e_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
                         if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
+                            if (debug) std::cout << "Accepting event\n";
                             v_tau_1 = tmpElectron->P4();
                             gen_t_1_real = true;
                             tmpJet = (Jet*)branchJet->At(taus[0]);
@@ -1890,6 +1893,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                         if (bJets.size() >= 2) {//Quality b jets pairs found
                             h_tau_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
                             if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
+                                if (debug) std::cout << "Accepting event\n";
                                 tmpJet = (Jet*)branchJet->At(tau_0);
                                 v_tau_0 = tmpJet->P4();
                                 gen_t_0_real = (tmpJet->TauWeight > 0.1) ? true : false;
