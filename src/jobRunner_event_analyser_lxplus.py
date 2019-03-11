@@ -37,9 +37,9 @@ def makeJOFile(inputFile, uid, opts):
     subFile.write("output = " + "analysis_" + str(uid) + ".out\n")
     subFile.write("error = " + "analysis_" + str(uid) + ".err\n")
     subFile.write("log = " + "analysis_" + str(uid) + ".log\n") 
-    subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')  
+    subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')
+    subFile.write('+JobFlavour = "workday"\n')
     subFile.write("queue 1\n")
-    subFile.write('+JobFlavour = "' + opts.queue + '"\n')
     subFile.close()
 
     sub = "condor_submit " + subName
