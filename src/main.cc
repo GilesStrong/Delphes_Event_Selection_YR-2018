@@ -139,7 +139,6 @@ std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, dou
         for (TLorentzVector bquark : gen_bquarks) {
             if (bquark.DeltaR(tmpJet->P4()) < dR) {
                 real = true;
-                if (debug) std::cout << "b jet real\n";
                 break;
             }
         }
