@@ -127,7 +127,7 @@ std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, dou
     GenParticle* tmpParticle;
     for (int i=0; i < gen_particles->GetEntries(); i++) {
         tmpParticle = (GenParticle*)gen_particles->At(i);
-        if (std::abs(tmpParticle->PID == 5)) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
+        if (std::abs(tmpParticle->PID) == 5) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
     }
     if (debug) std::cout << gen_bquarks.size() << "  bquarks found\n";    
     std::vector<bool> bjet_real;
@@ -143,7 +143,7 @@ std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, dou
                 break;
             }
         }
-        if (debug) std::cout << "b jet real? " << real;
+        if (debug) std::cout << "b jet real? " << real << "\n";
         bjet_real.push_back(real);
     }
     return bjet_real;
