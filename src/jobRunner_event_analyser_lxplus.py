@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     elif opts.sample == "ttbar":
         loc = ttbarLoc
-        filesttbar = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
         
     elif opts.sample == "ttbar_DiLepton":
         files = ttbar_DiLeptonFiles
