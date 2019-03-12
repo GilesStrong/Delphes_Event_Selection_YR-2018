@@ -176,6 +176,34 @@ std::vector<bool> tag_muons(TClonesArray* muons, TClonesArray* gen_particles, TH
     return weights;
 }
 
+std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, double dR=0.4) {
+    /*Match b-quarks to jets*/
+    if (debug) std::cout << "Checking b jets\n";
+    std::vector<TLorentzVector> gen_bquarks;
+    GenParticle* tmpParticle;
+    for (int i=0; i < gen_particles->GetEntries(); i++) {
+        tmpParticle = (GenParticle*)gen_particles->At(i);
+        if (std::abs(tmpParticle->PID) == 5) gen_bquarks.push_back((TLorentzVector)tmpParticle->P4());
+    }
+    if (debug) std::cout << gen_bquarks.size() << "  bquarks found\n";    
+    std::vector<bool> bjet_real;
+    Jet* tmpJet;
+    bool real = false;
+    for (int i = 0; i < jets->GetEntries(); i++) { //Loop through jets
+        tmpJet = (Jet*) jets->At(i);
+        real = false;
+        for (TLorentzVector bquark : gen_bquarks) {
+            if (bquark.DeltaR(tmpJet->P4()) < dR) {
+                real = true;
+                break;
+            }
+        }
+        if (debug) std::cout << "b jet real? " << real << "\n";
+        bjet_real.push_back(real);
+    }
+    return bjet_real;
+}
+
 double getMT2(TLorentzVector lepton1_p4, TLorentzVector lepton2_p4,
               TLorentzVector bjet_1, TLorentzVector bjet_2,
               TLorentzVector met_p4) {
@@ -1076,7 +1104,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     double gen_diH_pT, gen_diH_eta, gen_diH_phi, gen_diH_E, gen_diH_mass; //diHiggs variables
     double gen_h_bb_pT, gen_h_bb_eta, gen_h_bb_phi, gen_h_bb_E; //Higgs->bb variables
     double gen_h_tt_pT, gen_h_tt_eta, gen_h_tt_phi, gen_h_tt_E; //Higgs->tau tau variables
-    bool gen_mctMatch; //MC truth match
+    bool gen_mctMatch; //MC truth matc
+    bool gen_t_0_real, gen_t_1_real, gen_b_0_real, gen_b_1_real; //Real/fake jets
     double gen_cosThetaStar;
     //___________________________________________
     //klambda reweighting________________________
@@ -1181,6 +1210,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     e_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
     e_tau_b_b->Branch("gen_weight", &weight);
     e_tau_b_b->Branch("gen_weight_klambda", &gen_weight_klambda);
+    e_tau_b_b->Branch("gen_t_0_real", &gen_t_0_real);
+    e_tau_b_b->Branch("gen_t_1_real", &gen_t_1_real);
+    e_tau_b_b->Branch("gen_b_0_real", &gen_b_0_real);
+    e_tau_b_b->Branch("gen_b_1_real", &gen_b_1_real);
     TTree* mu_tau_b_b = new TTree("mu_tau_b_b", "#mu #tau_{h} b #bar{b}");
     mu_tau_b_b->Branch("t_0_pT", &t_0_pT);
     mu_tau_b_b->Branch("t_0_eta", &t_0_eta);
@@ -1276,6 +1309,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     mu_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
     mu_tau_b_b->Branch("gen_weight", &weight);
     mu_tau_b_b->Branch("gen_weight_klambda", &gen_weight_klambda);
+    mu_tau_b_b->Branch("gen_t_0_real", &gen_t_0_real);
+    mu_tau_b_b->Branch("gen_t_1_real", &gen_t_1_real);
+    mu_tau_b_b->Branch("gen_b_0_real", &gen_b_0_real);
+    mu_tau_b_b->Branch("gen_b_1_real", &gen_b_1_real);
     TTree* tau_tau_b_b = new TTree("tau_tau_b_b", "#tau_{h} #tau_{h} b #bar{b}");
     tau_tau_b_b->Branch("t_0_pT", &t_0_pT);
     tau_tau_b_b->Branch("t_0_eta", &t_0_eta);
@@ -1371,6 +1408,10 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     tau_tau_b_b->Branch("gen_cosThetaStar", &gen_cosThetaStar);
     tau_tau_b_b->Branch("gen_weight", &weight);
     tau_tau_b_b->Branch("gen_weight_klambda", &gen_weight_klambda);
+    tau_tau_b_b->Branch("gen_t_0_real", &gen_t_0_real);
+    tau_tau_b_b->Branch("gen_t_1_real", &gen_t_1_real);
+    tau_tau_b_b->Branch("gen_b_0_real", &gen_b_0_real);
+    tau_tau_b_b->Branch("gen_b_1_real", &gen_b_1_real);
     std::cout << "Variables initialised\n";
     //___________________________________________
     //Initialise plots___________________________
@@ -1462,7 +1503,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     Muon* tmpMuon;
     MissingET* tmpMPT;
     Weight* tmpWeight;
-    std::vector<bool> tau_weights;
+    std::vector<bool> tauTags, bjets_real;
 
     std::cout << "Beginning event loop\n";
     for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
@@ -1508,6 +1549,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
             }      
             bjet_weights = tag_bjets(branchJet, bquarks, eff_BTagSF, frate_BTagSF, bjet_matching_dR);
         }
+
+        bjets_real = tag_bjets(branchJet, branchParticle, 0.4);
 
         //Check for mu tau b b finalstates___
         h_mu_tau_b_b_cutFlow->Fill("All", 1);
@@ -1564,18 +1607,23 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                     if (bJets.size() >= 2) {//Quality b jets pairs found
                         h_mu_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
                         if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
+                            if (debug) std::cout << "Accepting event\n";
                             v_tau_1 = tmpMuon->P4();
+                            gen_t_1_real = true;
                             tmpJet = (Jet*)branchJet->At(taus[0]);
                             weight *= tau_weights[0]
                             v_tau_0 = tmpJet->P4();
+                            gen_t_0_real = (tmpJet->TauWeight > 0.1) ? true : false;
                             tmpMPT = (MissingET*)branchMissingET->At(0);
                             v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
                             tmpJet = (Jet*)branchJet->At(bJet_0);
                             weight *= bjets_weights[bJet_0]
                             v_bJet_0 = tmpJet->P4();
+                            gen_b_0_real = bjets_real[bJet_0];
                             tmpJet = (Jet*)branchJet->At(bJet_1);
                             weight *= bjets_weights[bJet_1]
                             v_bJet_1 = tmpJet->P4();
+                            gen_b_1_real = bjets_real[bJet_1];
                             v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
                             v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
                             if (debug) std::cout << "Accepted mu_tau_b_b event\n";
@@ -1727,18 +1775,23 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                     if (bJets.size() >= 2) {//Quality b jets pairs found
                         h_e_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
                         if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
+                            if (debug) std::cout << "Accepting event\n";
                             v_tau_1 = tmpElectron->P4();
+                            gen_t_1_real = true;
                             tmpJet = (Jet*)branchJet->At(taus[0]);
                             weight *= tau_weights[0]
                             v_tau_0 = tmpJet->P4();
+                            gen_t_0_real = (tmpJet->TauWeight > 0.1) ? true : false;
                             tmpMPT = (MissingET*)branchMissingET->At(0);
                             v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
                             tmpJet = (Jet*)branchJet->At(bJet_0);
                             weight *= bjet_weights[bJet_0]
                             v_bJet_0 = tmpJet->P4();
+                            gen_b_0_real = bjets_real[bJet_0];
                             tmpJet = (Jet*)branchJet->At(bJet_1);
                             weight *= bjet_weights[bJet_1]
                             v_bJet_1 = tmpJet->P4();
+                            gen_b_1_real = bjets_real[bJet_1];
                             v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
                             v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
                             if (debug) std::cout << "Accepted e_tau_b_b event\n";
@@ -1888,20 +1941,25 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                         if (bJets.size() >= 2) {//Quality b jets pairs found
                             h_tau_tau_b_b_cutFlow->Fill("Quality b#bar{b}", 1);
                             if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
+                                if (debug) std::cout << "Accepting event\n";
                                 tmpJet = (Jet*)branchJet->At(tau_0);
                                 weight = tau_weights[tau_0];
                                 v_tau_0 = tmpJet->P4();
+                                gen_t_0_real = (tmpJet->TauWeight > 0.1) ? true : false;
                                 tmpJet = (Jet*)branchJet->At(tau_1);
                                 weight *= tau_weights[tau_1];
                                 v_tau_1 = tmpJet->P4();
+                                gen_t_1_real = (tmpJet->TauWeight > 0.1) ? true : false;
                                 tmpMPT = (MissingET*)branchMissingET->At(0);
                                 v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
                                 tmpJet = (Jet*)branchJet->At(bJet_0);
                                 weight *= bjet_weights[bJet_0];
                                 v_bJet_0 = tmpJet->P4();
+                                gen_b_0_real = bjets_real[bJet_0];
                                 tmpJet = (Jet*)branchJet->At(bJet_1);
                                 weight *= bjet_weights[bJet_1];
                                 v_bJet_1 = tmpJet->P4();
+                                gen_b_1_real = bjets_real[bJet_1];
                                 v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
                                 v_diHiggs = getDiHiggs(v_higgs_tt, v_higgs_bb);
                                 if (debug) std::cout << "Accepted tau_tau_b_b event\n";

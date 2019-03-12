@@ -1,3 +1,4 @@
+#!/bin/python
 '''Giles Strong (giles.strong@outlook.com)'''
 
 from __future__ import division
@@ -16,12 +17,13 @@ def makeJOFile(inputFile, uid, opts):
     cmd += " -o " + outputFile
     cmd += " -d " + str(opts.debug)
 
-    joName = "analysis_" + str(uid) + ".job"
+    joName = "analysis_" + str(uid) + ".sh"
     joFile = open(joName, "w")
+    joFile.write("#!/bin/sh\n")
     joFile.write("echo Beginning\ job\n")
     joFile.write("export HOME=/afs/cern.ch/user/g/gstrong/\n")
-    joFile.write("source /afs/cern.ch/sw/lcg/external/gcc/4.9.3/x86_64-slc6/setup.sh\n")
-    joFile.write("source /afs/cern.ch/sw/lcg/app/releases/ROOT/6.06.00/x86_64-slc6-gcc49-opt/root/bin/thisroot.sh\n")
+    joFile.write("source /cvmfs/sft.cern.ch/lcg/views/LCG_87/x86_64-slc6-gcc49-opt/setup.sh\n")
+    joFile.write("source /cvmfs/sft.cern.ch/lcg/releases/ROOT/6.06.00-a82d7/x86_64-slc6-gcc49-opt/bin/thisroot.sh\n")
     joFile.write("export LD_LIBRARY_PATH=$HOME/programs/delphes/:$LD_LIBRARY_PATH\n")
     joFile.write("export X509_USER_PROXY=$HOME/x509up_u5020023\n")
     joFile.write("cd " + softDir + "\n")
@@ -29,16 +31,30 @@ def makeJOFile(inputFile, uid, opts):
     joFile.write(cmd + "\n")
     joFile.close()
 
-    sub = "bsub -q " + opts.queue + " " + joName
-    print "Submitting: " + sub
     os.system("chmod 744 " + joName)
+
+def make_sub_file(opts):
+    subName = "condor.sub"
+    subFile = open(subName, "w")
+    subFile.write("executable = $(filename)\n")
+    subFile.write("output = " + "analysis_$(ProcId).out\n")
+    subFile.write("error = " + "analysis_$(ProcId)err\n")
+    subFile.write("log = " + "analysis_$(ProcId).log\n") 
+    subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')
+    subFile.write('+JobFlavour = "' + opts.queue + '"\n')
+    subFile.write("queue filename matching (analysis_*.sh)")
+    subFile.close()
+
+    sub = "condor_submit " + subName
+    print "Submitting: " + sub
+    os.system("chmod 744 " + subName)
     os.system(sub)
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage = __doc__)
     parser.add_option("-s", "--sample", dest = "sample", action = "store", help = "Sample to analyse")
     parser.add_option("-d", "--debug", dest = "debug", action = "store", default = 0, help = "Run in debug mode. {0,1}, default: 0")
-    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = "8nh", help = "Queue to run jobs. Default: normal")
+    parser.add_option("-q", "--queue", dest = "queue", action = "store", default = "workday", help = "Queue to run jobs. Default: normal")
     parser.add_option("-f", "--first", dest = "first", action = "store", default = 0, help = "First job to run. Default: 0")
     opts, args = parser.parse_args()
 
@@ -49,9 +65,9 @@ if __name__ == "__main__":
         files = signalFiles
         loc = signalLoc
 
-    elif opts.sample == "ttbar":
+    elif opts.sample == "":
         loc = ttbarLoc
-        files = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
+        filesttbar = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
         
     elif opts.sample == "ttbar_DiLepton":
         files = ttbar_DiLeptonFiles
@@ -200,4 +216,4 @@ if __name__ == "__main__":
     for i, f in enumerate(files):
         if i >= int(opts.first):
             makeJOFile(loc+f, i, opts)
-        #break
+    make_sub_file(opts)
