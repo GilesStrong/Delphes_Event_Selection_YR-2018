@@ -31,20 +31,22 @@ def makeJOFile(inputFile, uid, opts):
     joFile.write(cmd + "\n")
     joFile.close()
 
-    subName = "analysis_" + str(uid) + ".sub"
+    os.system("chmod 744 " + joName)
+
+def make_sub_file(opts):
+    subName = "condor.sub"
     subFile = open(subName, "w")
-    subFile.write("executable = " + "analysis_" + str(uid) + ".sh\n")
-    subFile.write("output = " + "analysis_" + str(uid) + ".out\n")
-    subFile.write("error = " + "analysis_" + str(uid) + ".err\n")
-    subFile.write("log = " + "analysis_" + str(uid) + ".log\n") 
+    subFile.write("executable = $(filename)\n")
+    subFile.write("output = " + "analysis_$(ProcId).out\n")
+    subFile.write("error = " + "analysis_$(ProcId)err\n")
+    subFile.write("log = " + "analysis_$(ProcId).log\n") 
     subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')
     subFile.write('+JobFlavour = "' + opts.queue + '"\n')
-    subFile.write("queue 1\n")
+    subFile.write("queue filename matching (analysis_*.sh)")
     subFile.close()
 
     sub = "condor_submit " + subName
     print "Submitting: " + sub
-    os.system("chmod 744 " + joName)
     os.system("chmod 744 " + subName)
     os.system(sub)
 
@@ -214,4 +216,4 @@ if __name__ == "__main__":
     for i, f in enumerate(files):
         if i >= int(opts.first):
             makeJOFile(loc+f, i, opts)
-        #break
+    make_sub_file(opts)
