@@ -65,7 +65,7 @@ if __name__ == "__main__":
         files = signalFiles
         loc = signalLoc
 
-    elif opts.sample == "":
+    elif opts.sample == "ttbar":
         loc = ttbarLoc
         filesttbar = [x[x.rfind("/")+1:] for x in glob.glob(loc + "/*.root")]
         
