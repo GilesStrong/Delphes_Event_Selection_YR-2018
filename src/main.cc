@@ -9,7 +9,7 @@
 
 bool debug = false;
 
-std::map<int, double> tauEfficiency = {{21, 0.31}, {32, 0.45}, {54, 0.61}};
+std::map<int, double> sascha_tau_efficiency = {{21, 0.31}, {32, 0.45}, {54, 0.61}};
 
 std::map<int, double> tauMistagRate30 = {{21, 0.0025}, {32, 0.0049}, {54, 0.0118}};
 std::map<int, double> tauMistagRate23 = {{21, 0.0023}, {32, 0.0045}, {54, 0.0110}};
@@ -45,7 +45,11 @@ int klambda_min = -5;
 int klambda_max = 10;
 double klambda_res = 0.25;
 
-double getFakeRate(double pt, double eta) {
+double get_scale(double pT, double eta, TH2* scales) {
+    return scales->GetBinContent(scales->GetXaxis()->FindBin(x), scales->GetYaxis()->FindBin(y));
+}
+
+double sascha_tau_fake_rate(double pt, double eta) {
     double fakerate = (-8.33753e-03)
                      +((1.48065e-03)*pt)
                      -((3.23176e-05)*pow(pt,2))
@@ -73,51 +77,103 @@ double getFakeRate(double pt, double eta) {
     return fakerate;
 }
 
-std::vector<bool> tagTaus_old(TClonesArray* jets) {
+std::vector<double> tag_taus(TClonesArray* jets, TH2* mtd_efficiency, TH2* mtd_fakerate) {
     /*Apply new tau tagging*/
-    std::vector<bool> pass;
+    std::vector<double> weights;
     Jet* tmpJet;
-
     for (int i = 0; i < jets->GetEntries(); i++) { //Loop through jets
         tmpJet = (Jet*) jets->At(i);
-        if (tmpJet->TauTag) {
-            pass.push_back(true);
-        } else {
-            pass.push_back(false);
+        if (tmpJet->TauWeight > 0.1) { //Real tau
+            weights.push_back(sascha_tau_efficiency[tauWP]*get_scale(tmpJet->PT, tmpJet->Eta, mtd_efficiency))
+        } else { //Light jet
+            weights.push_back(sascha_tau_fake_rate(tmpJet->PT, tmpJet->Eta)*get_scale(tmpJet->PT, tmpJet->Eta, mtd_fakerate))
         }
     }
-
-    return pass;
+    return weights;
 }
 
-std::vector<bool> tagTaus(TClonesArray* jets) {
-    /*Apply new tau tagging*/
-    std::vector<bool> pass;
+std::vector<bool> tag_bjets(TClonesArray* jets, std::vector<TLorentzVector> bquarks, TH2* mtd_efficiency, TH2* mtd_fakerate, double dR=0.4) {
+    /*Apply new b tagging*/
+    std::vector<bool> weights;
     Jet* tmpJet;
-    std::random_device rd;
-    std::mt19937 e2(rd());
-    std::uniform_real_distribution<> dist(0.0, 1.0);
-
+    bool fake = true;
     for (int i = 0; i < jets->GetEntries(); i++) { //Loop through jets
         tmpJet = (Jet*) jets->At(i);
-        double tag = dist(e2);
-        if (tmpJet->TauWeight > 0.1) { //Real tau
-            if (tag <= tauEfficiency[tauWP]) { //Accept
-                pass.push_back(true);
-            } else {
-                pass.push_back(false);
-            }
-
-        } else { //Light jet
-            if (tag <= getFakeRate(tmpJet->PT, tmpJet->Eta)) { //Accept
-                pass.push_back(true);
-            } else {
-                pass.push_back(false);
+        fake = true;
+        for (TLorentzVector bquark : bquarks) {
+            if (bquark.DeltaR(tmpJet->P4()) < dR) {
+                fake = false;
+                break;
             }
         }
+        if (fake) { //light jet
+            weights.push_back(get_scale(tmpJet->PT, tmpJet->Eta, mtd_fakerate))
+        } else { //Real b jet
+            weights.push_back(get_scale(tmpJet->PT, tmpJet->Eta, mtd_efficiency))
+        }
+    }
+    return weights;
+}
+
+std::vector<bool> tag_electrons(TClonesArray* electrons, TClonesArray* gen_particles,
+                                TH2* mtd_id_efficiency, TH2* mtd_id_fakerate, TH2* mtd_iso_efficiency, TH2* mtd_iso_fakerate double dR=0.4) {
+    /*Apply new electron tagging*/
+    std::vector<TLorentzVector> gen_electrons;
+    GenParticle* tmpParticle;
+    for (int i=0; i < gen_particles->GetEntires(); i++) {
+        tmpParticle = (GenParticle*)gen_particles->At(i);
+        if std::abs(tmpParticle->PID()) == 11 gen_electrons.push_back((TLorentzVector)tmpParticle->P4());
     }
 
-    return pass;
+    std::vector<bool> weights;
+    Electron* tmpElectron;
+    bool fake = true;
+    for (int i = 0; i < electrons->GetEntries(); i++) {
+        tmpElectron = (Electron*) electrons->At(i);
+        fake = true;
+        for (TLorentzVector gen_electron : gen_electrons) {
+            if (gen_electron.DeltaR(tmpElectron->P4()) < dR) {
+                fake = false;
+                break;
+            }
+        }
+        if (fake) {
+            weights.push_back(get_scale(tmpElectron->PT, tmpElectron->Eta, mtd_id_fakerate)*get_scale(tmpElectron->PT, tmpElectron->Eta, mtd_iso_fakerate))
+        } else {
+            weights.push_back(get_scale(tmpElectron->PT, tmpElectron->Eta, mtd_id_efficiency)*get_scale(tmpElectron->PT, tmpElectron->Eta, mtd_iso_efficiency))
+        }
+    }
+    return weights;
+}
+
+std::vector<bool> tag_muons(TClonesArray* muons, TClonesArray* gen_particles, TH2* mtd_efficiency, TH2* mtd_fakerate, double dR=0.4) {
+    /*Apply new muon tagging*/
+    std::vector<TLorentzVector> gen_muons;
+    GenParticle* tmpParticle;
+    for (int i=0; i < gen_particles->GetEntires(); i++) {
+        tmpParticle = (GenParticle*)gen_particles->At(i);
+        if std::abs(tmpParticle->PID()) == 13 gen_muons.push_back((TLorentzVector)tmpParticle->P4());
+    }
+
+    std::vector<bool> weights;
+    Muon* tmpMuon;
+    bool fake = true;
+    for (int i = 0; i < muons->GetEntries(); i++) {
+        tmpMuon = (Muon*) muons->At(i);
+        fake = true;
+        for (TLorentzVector gen_muon : gen_muons) {
+            if (gen_muon.DeltaR(tmpMuon->P4()) < dR) {
+                fake = false;
+                break;
+            }
+        }
+        if (fake) {
+            weights.push_back(get_scale(tmpElectron->PT, tmpElectron->Eta, mtd_fakerate))
+        } else {
+            weights.push_back(get_scale(tmpElectron->PT, tmpElectron->Eta, mtd_efficiency))
+        }
+    }
+    return weights;
 }
 
 std::vector<bool> tag_bjets(TClonesArray* jets, TClonesArray* gen_particles, double dR=0.4) {
@@ -620,29 +676,20 @@ bool correctDecayChannel(std::string input, Long64_t cEvent,
 
 bool getGenSystem(TClonesArray* branchParticle,
     TLorentzVector* v_gen_higgs_bb, TLorentzVector* v_gen_higgs_tt,
-    TLorentzVector* v_gen_tau_0, TLorentzVector* v_gen_tau_1,
-    TLorentzVector* v_gen_bJet_0, TLorentzVector* v_gen_bJet_1) {
+    std::vector<TLorentzVector>* bquarks) {
     /*Simplified version of correctDecayChannel + truthCut designed for filtered Delphes, where mother-daughter links are broken*/
     GenParticle* tmpParticle;
     bool match = false;
 
-    std::vector<TLorentzVector> higgs, bquarks, taus, anti_bquarks, anti_taus;
+    std::vector<TLorentzVector> higgs, bquarks;
     for (int p = 0; p < branchParticle->GetEntriesFast(); ++p) {
         tmpParticle = (GenParticle*)branchParticle->At(p);
         if (tmpParticle->IsPU == true) continue;
         if (tmpParticle->Status == 22 && tmpParticle->PID == 25) {
             higgs.push_back(tmpParticle->P4());
-        } // else if (tmpParticle->Status == 23) {
-        //     if (tmpParticle->PID == 5) {//23
-        //         bquarks.push_back(tmpParticle->P4());
-        //     } else if (tmpParticle->PID == -5) {
-        //         anti_bquarks.push_back(tmpParticle->P4());
-        //     } else if (tmpParticle->PID == 15) {
-        //         taus.push_back(tmpParticle->P4());
-        //     } else if (tmpParticle->PID == -15) {
-        //         anti_taus.push_back(tmpParticle->P4());
-        //     }
-        // }
+        } else if (tmpParticle->Status == 23) & ((tmpParticle->PID == 5) | (tmpParticle->PID == -5)) {
+                bquarks->push_back(tmpParticle->P4());
+        }
     }
     if (higgs.size() != 2) {
         throw std::runtime_error("Signal doesn't contain exactly 2 status 22 Higgs");
@@ -997,6 +1044,17 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     gStyle->SetPadGridX(kFALSE);
     gStyle->SetPadGridY(kFALSE);
     //___________________________________________
+    TFile* f_mtd_scales = new TFile("ScaleFactors.root");
+    TH2* eff_BTagSF = (TH2*) f_mtd_scales->Get("eff_BTagSF");
+    TH2* frate_BTagSF = (TH2*) f_mtd_scales->Get("frate_BTagSF");
+    TH2* eff_TauSF = (TH2*) f_mtd_scales->Get("eff_TauSF");
+    TH2* frate_TauSF = (TH2*) f_mtd_scales->Get("frate_TauSF");
+    TH2* eff_EleIsoSF = (TH2*) f_mtd_scales->Get("eff_EleIsoSF");
+    TH2* frate_EleIsoSF = (TH2*) f_mtd_scales->Get("frate_EleIsoSF");
+    TH2* eff_MuonIsoSF = (TH2*) f_mtd_scales->Get("eff_MuonIsoSF");
+    TH2* frate_MuonIsoSF = (TH2*) f_mtd_scales->Get("frate_MuonIsoSF");
+    TH2* eff_EleIDSF = (TH2*) f_mtd_scales->Get("eff_EleIDSF");
+    TH2* frate_EleIDSF = (TH2*) f_mtd_scales->Get("frate_EleIDSF");
     // read out the Ai histogram coefficients____
     TFile* f_14TeV_coeffs = new TFile("Coefficients_14TeV.root");
     std::array<TH2*,n_Ai_coeffs> histos_A;
@@ -1447,7 +1505,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     Weight* tmpWeight;
     std::vector<bool> tauTags, bjets_real;
 
-
     std::cout << "Beginning event loop\n";
     for (Long64_t cEvent = 0; cEvent < nEvents; cEvent++) {
         if (debug) std::cout << "Loading event " << cEvent << "\n";
@@ -1458,20 +1515,17 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                 100*cEvent/nEvents << "%\n";
         h_datasetSizes->Fill("All", 1);
         eventAccepted = false;
-        if (options["-i"].find("13Te") != std::string::npos) {
-            tauTags = tagTaus_old(branchJet);
-        } else {
-            tauTags = tagTaus(branchJet); //get new tau tags
-        }
+        tau_weights = tagTaus(branchJet, eff_TauSF, frate_TauSF); //get new tau tags
         hBB = -1;
         hTauTau = -1;
         gen_mctMatch = false;
         TLorentzVector v_gen_higgs_bb, v_gen_higgs_tt, v_gen_diHiggs, v_gen_tau_0, v_gen_tau_1, v_gen_bJet_0, v_gen_bJet_1;
+        std::vector<TLorentzVector> gen_bquarks;
 
         //klambda weights
         if (options["-i"].find("GluGluToHHTo2B2Tau_node_SM_14TeV") != std::string::npos) { //14TeV Signal
             //Gen system
-            gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &v_gen_tau_0, &v_gen_tau_1, &v_gen_bJet_0, &v_gen_bJet_1);
+            gen_mctMatch = getGenSystem(branchParticle, &v_gen_higgs_bb, &v_gen_higgs_tt, &gen_bquarks);
             v_gen_diHiggs = getDiHiggs(v_gen_higgs_tt, v_gen_higgs_bb);
             gen_cosThetaStar = std::abs(v_gen_higgs_bb.CosTheta());
             gen_diH_mass = v_gen_diHiggs.M();
@@ -1492,7 +1546,8 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                 w = functionGF(kl, 1, 0, 0, 0, values_A)/SM_evts;
                 gen_weight_klambda.push_back(w);
                 h_sum_w->Fill(kl, w);
-            }       
+            }      
+            bjet_weights = tag_bjets(branchJet, bquarks, eff_BTagSF, frate_BTagSF, bjet_matching_dR);
         }
 
         bjets_real = tag_bjets(branchJet, branchParticle, 0.4);
@@ -1506,12 +1561,15 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
         bJets.clear();
         addMuon = false;
         addElectron = false;
+        weight = 0
         if (debug) std::cout << "Running mu tau b b\n";
+        muon_weights = tag_muons(branchMuon, branchParticle, eff_MuonIsoSF, frate_MuonIsoSF, electon_matching_dR)
         for (int i = 0; i < branchMuon->GetEntries(); i++) { //Loop through muons
             tmpMuon = (Muon*) branchMuon->At(i);
             if (tmpMuon->PT > muPTMin && std::abs(tmpMuon->Eta) < muEtaMax
                     && tmpMuon->IsolationVar < muIsoMax) { //Quality muon
                 muons.push_back(i);
+                weight = muon_weights[i]
             } else if (tmpMuon->PT > muPTMinAdd && std::abs(tmpMuon->Eta) < muEtaMaxAdd
                     && tmpMuon->IsolationVar < muIsoMaxAdd) { //Additional muon
                 addMuon = true;
@@ -1533,18 +1591,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                 h_mu_tau_b_b_cutFlow->Fill("1 #mu & 0 e", 1);
                 for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
                     tmpJet = (Jet*) branchJet->At(i);
-                    if (tauTags[i] == true && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+                    if (tau_weights[i] > 0 && tmpJet->PT > tauPTMin
                             && std::abs(tmpJet->Eta) < tauEtaMax
                             && tmpJet->Charge != tmpMuon->Charge) { //Quality  OS tau
                         taus.push_back(i);
-                    }
-                    if (options["-i"].find("13Te") != std::string::npos) {
-                        if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
-                                && std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
-                            bJets.push_back(i);
-                        }
                     } else {
-                        if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+                        if (bjet_weights[i] > 0 && tmpJet->PT > bJetPTMin
                                 && std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
                             bJets.push_back(i);
                         }
@@ -1559,14 +1611,17 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             v_tau_1 = tmpMuon->P4();
                             gen_t_1_real = true;
                             tmpJet = (Jet*)branchJet->At(taus[0]);
+                            weight *= tau_weights[0]
                             v_tau_0 = tmpJet->P4();
                             gen_t_0_real = (tmpJet->TauWeight > 0.1) ? true : false;
                             tmpMPT = (MissingET*)branchMissingET->At(0);
                             v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
                             tmpJet = (Jet*)branchJet->At(bJet_0);
+                            weight *= bjets_weights[bJet_0]
                             v_bJet_0 = tmpJet->P4();
                             gen_b_0_real = bjets_real[bJet_0];
                             tmpJet = (Jet*)branchJet->At(bJet_1);
+                            weight *= bjets_weights[bJet_1]
                             v_bJet_1 = tmpJet->P4();
                             gen_b_1_real = bjets_real[bJet_1];
                             v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
@@ -1655,9 +1710,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                     &aplanarityP, &aplanorityP,
                                     &upsilonP, &dShapeP);
                             if (debug) std::cout << "1\n";
-
-                            //tmpWeight = (Weight*)branchWeights->At(0);
-                            //weight = tmpWeight->Weight;
                             mu_tau_b_b->Fill();
                             h_datasetSizes->Fill("#mu #tau_{h} b #bar{b}", 1);
                             eventAccepted = true;
@@ -1679,11 +1731,13 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
         addMuon = false;
         addElectron = false;
         if (debug) std::cout << "Running e tau b b\n";
+        electron_weights = tag_electrons(branchElectron, branchParticle, eff_EleIDSF, frate_EleIDSF, eff_EleIsoSF, frate_EleIsoSF, electon_matching_dR);
         for (int i = 0; i < branchElectron->GetEntries(); i++) { //Loop through Electons
             tmpElectron = (Electron*) branchElectron->At(i);
             if (tmpElectron->PT > ePTMin && std::abs(tmpElectron->Eta) < eEtaMax
                     && tmpElectron->IsolationVar < eIsoMax) { //Quality Electron
                 electrons.push_back(i);
+                weight = electron_weights[i]
             } else if (tmpElectron->PT > ePTMinAdd && std::abs(tmpElectron->Eta) < eEtaMaxAdd
                     && tmpElectron->IsolationVar < eIsoMaxAdd) { //Additional electon
                 addElectron = true;
@@ -1705,18 +1759,12 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                 h_e_tau_b_b_cutFlow->Fill("1 e & 0 #mu", 1);
                 for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
                     tmpJet = (Jet*) branchJet->At(i);
-                    if (tauTags[i] == true && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+                    if (tau_weights[i] > 0 && tmpJet->PT > tauPTMin
                             && std::abs(tmpJet->Eta) < tauEtaMax
                             && tmpJet->Charge != tmpElectron->Charge) { //Quality  OS tau
                         taus.push_back(i);
-                    }
-                    if (options["-i"].find("13Te") != std::string::npos) {
-                        if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
-                                && std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
-                            bJets.push_back(i);
-                        }
                     } else {
-                        if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+                        if (bjet_weights[i] > 0 && tmpJet->PT > bJetPTMin
                                 && std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
                             bJets.push_back(i);
                         }
@@ -1731,14 +1779,17 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             v_tau_1 = tmpElectron->P4();
                             gen_t_1_real = true;
                             tmpJet = (Jet*)branchJet->At(taus[0]);
+                            weight *= tau_weights[0]
                             v_tau_0 = tmpJet->P4();
                             gen_t_0_real = (tmpJet->TauWeight > 0.1) ? true : false;
                             tmpMPT = (MissingET*)branchMissingET->At(0);
                             v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
                             tmpJet = (Jet*)branchJet->At(bJet_0);
+                            weight *= bjet_weights[bJet_0]
                             v_bJet_0 = tmpJet->P4();
                             gen_b_0_real = bjets_real[bJet_0];
                             tmpJet = (Jet*)branchJet->At(bJet_1);
+                            weight *= bjet_weights[bJet_1]
                             v_bJet_1 = tmpJet->P4();
                             gen_b_1_real = bjets_real[bJet_1];
                             v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
@@ -1826,8 +1877,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                     &sphericityP, &spherocityP,
                                     &aplanarityP, &aplanorityP,
                                     &upsilonP, &dShapeP);
-                            //tmpWeight = (Weight*)branchWeights->At(0);
-                            //weight = tmpWeight->Weight;
                             e_tau_b_b->Fill();
                             h_datasetSizes->Fill("e #tau_{h} b #bar{b}", 1);
                             eventAccepted = true;
@@ -1869,17 +1918,17 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                 h_tau_tau_b_b_cutFlow->Fill("0 e & 0 #mu", 1);
                 for (int i = 0; i < branchJet->GetEntries(); i++) { //Loop through jets
                     tmpJet = (Jet*) branchJet->At(i);
-                    if (tauTags[i] == true && tmpJet->BTag == 0 && tmpJet->PT > tauPTMin
+                    if (tau_weights[i] > 0 && tmpJet->PT > tauPTMin
                             && std::abs(tmpJet->Eta) < tauEtaMax) { //Quality tau
                         taus.push_back(i);
                     }
                     if (options["-i"].find("13Te") != std::string::npos) {
-                        if (tauTags[i] == false && tmpJet->BTag == 1 && tmpJet->PT > bJetPTMin
+                        if (bjet_weights[i] > 0 && tmpJet->PT > bJetPTMin
                                 && std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
                             bJets.push_back(i);
                         }
                     } else {
-                        if (tauTags[i] == false && (tmpJet->BTag & (1 << 4) ) && tmpJet->PT > bJetPTMin
+                        if (bjet_weights[i] > 0 && tmpJet->PT > bJetPTMin
                                 && std::abs(tmpJet->Eta) < bJetEtaMax) { //Quality b jet
                             bJets.push_back(i);
                         }
@@ -1894,17 +1943,21 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                             if (selectBJets(branchJet, &bJets, &bJet_0, &bJet_1) == true) { //Quality b-jet pair found
                                 if (debug) std::cout << "Accepting event\n";
                                 tmpJet = (Jet*)branchJet->At(tau_0);
+                                weight = tau_weights[tau_0];
                                 v_tau_0 = tmpJet->P4();
                                 gen_t_0_real = (tmpJet->TauWeight > 0.1) ? true : false;
                                 tmpJet = (Jet*)branchJet->At(tau_1);
+                                weight *= tau_weights[tau_1];
                                 v_tau_1 = tmpJet->P4();
                                 gen_t_1_real = (tmpJet->TauWeight > 0.1) ? true : false;
                                 tmpMPT = (MissingET*)branchMissingET->At(0);
                                 v_higgs_tt = getHiggs2Taus(tmpMPT, v_tau_0, v_tau_1);
                                 tmpJet = (Jet*)branchJet->At(bJet_0);
+                                weight *= bjet_weights[bJet_0];
                                 v_bJet_0 = tmpJet->P4();
                                 gen_b_0_real = bjets_real[bJet_0];
                                 tmpJet = (Jet*)branchJet->At(bJet_1);
+                                weight *= bjet_weights[bJet_1];
                                 v_bJet_1 = tmpJet->P4();
                                 gen_b_1_real = bjets_real[bJet_1];
                                 v_higgs_bb = getHiggs2Bs(v_bJet_0, v_bJet_1);
@@ -1992,8 +2045,6 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
                                         &sphericityP, &spherocityP,
                                         &aplanarityP, &aplanorityP,
                                         &upsilonP, &dShapeP);
-                                //tmpWeight = (Weight*)branchWeights->At(0);
-                                //weight = tmpWeight->Weight;
                                 tau_tau_b_b->Fill();
                                 h_datasetSizes->Fill("#tau_{h} #tau_{h} b #bar{b}", 1);
                                 eventAccepted = true;
@@ -2078,6 +2129,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     outputFile->Close();
     f_14TeV_coeffs->Close();
     f_HH_14TeV_histo->Close();
+    f_mtd_scales->Close();
     delete outputFile;
     delete e_tau_b_b;
     delete mu_tau_b_b;
