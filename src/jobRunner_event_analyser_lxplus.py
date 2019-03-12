@@ -37,9 +37,9 @@ def make_sub_file(opts):
     subName = "condor.sub"
     subFile = open(subName, "w")
     subFile.write("executable = $(filename)\n")
-    subFile.write("output = " + "analysis_$(ProcId).out\n")
-    subFile.write("error = " + "analysis_$(ProcId).err\n")
-    subFile.write("log = " + "analysis_$(ProcId).log\n") 
+    subFile.write("output = " + opts.sample + "_$(ProcId).out\n")
+    subFile.write("error = " + opts.sample + "_$(ProcId).err\n")
+    subFile.write("log = " + opts.sample + "_$(ProcId).log\n") 
     subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')
     subFile.write('+JobFlavour = "' + opts.queue + '"\n')
     subFile.write("queue filename matching (" + opts.sample + "_*.sh)")
