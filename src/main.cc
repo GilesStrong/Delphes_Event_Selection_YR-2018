@@ -1069,7 +1069,7 @@ int main(int argc, char *argv[]) { //input, output, N events, truth
     TH2* HH_14TeV_histo = (TH2*) f_HH_14TeV_histo->Get("h_events_SM");
     //Build output files_________________________
     std::string outputName(options["-o"]);
-    makeDirs(outputName);
+    //makeDirs(outputName);
     TFile* outputFile = new TFile((outputName + ".root").c_str(), "recreate");
     outputFile->cd();
     //Initialise variables_______________________
