@@ -17,7 +17,7 @@ def makeJOFile(inputFile, uid, opts):
     cmd += " -o " + outputFile
     cmd += " -d " + str(opts.debug)
 
-    joName = "analysis_" + str(uid) + ".sh"
+    joName = opts.sample + "_" + str(uid) + ".sh"
     joFile = open(joName, "w")
     joFile.write("#!/bin/sh\n")
     joFile.write("echo Beginning\ job\n")
@@ -38,11 +38,11 @@ def make_sub_file(opts):
     subFile = open(subName, "w")
     subFile.write("executable = $(filename)\n")
     subFile.write("output = " + "analysis_$(ProcId).out\n")
-    subFile.write("error = " + "analysis_$(ProcId)err\n")
+    subFile.write("error = " + "analysis_$(ProcId).err\n")
     subFile.write("log = " + "analysis_$(ProcId).log\n") 
     subFile.write('requirements = (OpSysAndVer =?= "SLCern6")\n')
     subFile.write('+JobFlavour = "' + opts.queue + '"\n')
-    subFile.write("queue filename matching (analysis_*.sh)")
+    subFile.write("queue filename matching (" + opts.sample + "_*.sh)")
     subFile.close()
 
     sub = "condor_submit " + subName
